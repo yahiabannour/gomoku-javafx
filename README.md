@@ -31,7 +31,7 @@ Gomoku ist ein strategisches Brettspiel für zwei Spieler auf einem 15x15 Gitter
 Das Projekt folgt dem **Model-View-Controller (MVC)** Pattern kombiniert mit dem **Strategy Design Pattern** für KI-Strategien:
 
 ```
-de.hsanhalt.oil.gomoku/
+de.hsh.oil.gomoku/
 ├── Main.java                 # Einstiegspunkt mit Parameterverarbeitung
 ├── model/                    # Model-Schicht
 │   ├── SpielKonfiguration.java
@@ -168,7 +168,7 @@ mvn test
 
 ## Autoren
 
-- OIL SS2025 - Hochschule Anhalt
+- OIL SS2025 - Hochschule Hannover    
 - Entwickelt für die Abschlussaufgabe "Objektorientierte Implementierungssprache"
 
 ## Lizenz

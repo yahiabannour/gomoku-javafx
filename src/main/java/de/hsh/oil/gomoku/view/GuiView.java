@@ -75,41 +75,69 @@ public class GuiView implements SpielView {
         BorderPane hauptLayout = new BorderPane();
         hauptLayout.setPadding(new Insets(10));
         
-        // Oberer Bereich - Spieler-Info und Status
-        VBox oberBereich = new VBox(10);
-        oberBereich.setAlignment(Pos.CENTER);
+        // Linker Bereich - Spieler-Info und Nachrichten
+        VBox linkerBereich = new VBox(10);
+        linkerBereich.setPadding(new Insets(0, 10, 0, 0));
+        linkerBereich.setPrefWidth(300);
+        linkerBereich.setMinWidth(250);
         
         spielerInfoLabel = new Label();
-        spielerInfoLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        spielerInfoLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-alignment: center;");
+        spielerInfoLabel.setWrapText(true);
         
         statusLabel = new Label("Bereit zum Spielen");
-        statusLabel.setStyle("-fx-font-size: 12px;");
+        statusLabel.setStyle("-fx-font-size: 12px; -fx-text-alignment: center; -fx-text-fill: #2E8B57;");
+        statusLabel.setWrapText(true);
         
-        // Nachrichten-Bereich
+        // Separator
+        Separator separator = new Separator();
+        
+        // Nachrichten-Bereich - resizable
+        Label nachrichtenLabel = new Label("📝 Spielverlauf:");
+        nachrichtenLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold;");
+        
         nachrichtenArea = new TextArea();
-        nachrichtenArea.setPrefRowCount(4);
-        nachrichtenArea.setPrefColumnCount(50);
         nachrichtenArea.setEditable(false);
         nachrichtenArea.setWrapText(true);
-        nachrichtenArea.setStyle("-fx-font-size: 11px; -fx-background-color: #f8f8f8;");
+        nachrichtenArea.setStyle("-fx-font-family: 'Courier New', monospace; " +
+                                "-fx-font-size: 11px; " +
+                                "-fx-background-color: #f8f8f8; " +
+                                "-fx-border-color: #ccc; " +
+                                "-fx-border-radius: 5px; " +
+                                "-fx-background-radius: 5px;");
         
         // Willkommensnachricht zeigen
         nachrichtenArea.setText("🎮 Willkommen bei Gomoku!\n" +
-                               "Ziel: Bringe 5 Steine in eine Reihe (horizontal, vertikal oder diagonal)\n" +
-                               "Klicke auf ein freies Feld um zu spielen.\n");
+                               "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+                               "📖 Ziel: Bringe 5 Steine in eine Reihe\n" +
+                               "   (horizontal, vertikal oder diagonal)\n" +
+                               "🖱️  Klicke auf ein freies Feld um zu spielen\n" +
+                               "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
         
-        oberBereich.getChildren().addAll(spielerInfoLabel, statusLabel, nachrichtenArea);
-        hauptLayout.setTop(oberBereich);
+        // VBox.setVgrow für resizable TextArea
+        VBox.setVgrow(nachrichtenArea, Priority.ALWAYS);
+        
+        linkerBereich.getChildren().addAll(spielerInfoLabel, statusLabel, separator, nachrichtenLabel, nachrichtenArea);
+        hauptLayout.setLeft(linkerBereich);
         
         // Mittlerer Bereich - Spielfeld
+        VBox spielfeldBereich = new VBox(10);
+        spielfeldBereich.setAlignment(Pos.CENTER);
+        spielfeldBereich.setPadding(new Insets(10));
+        
+        Label spielfeldLabel = new Label("🎯 Gomoku Spielfeld (15x15)");
+        spielfeldLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        
         spielfeldGrid = new GridPane();
         spielfeldGrid.setAlignment(Pos.CENTER);
         spielfeldGrid.setHgap(1);
         spielfeldGrid.setVgap(1);
-        spielfeldGrid.setStyle("-fx-background-color: #8B4513;");
+        spielfeldGrid.setStyle("-fx-background-color: #8B4513; -fx-padding: 5px;");
         
         erstelleSpielfeld();
-        hauptLayout.setCenter(spielfeldGrid);
+        
+        spielfeldBereich.getChildren().addAll(spielfeldLabel, spielfeldGrid);
+        hauptLayout.setCenter(spielfeldBereich);
         
         // Unterer Bereich - Buttons
         HBox buttonBereich = new HBox(10);
@@ -129,8 +157,10 @@ public class GuiView implements SpielView {
         hauptLayout.setBottom(buttonBereich);
         
         // Scene erstellen und anzeigen
-        Scene scene = new Scene(hauptLayout, 900, 1000);
+        Scene scene = new Scene(hauptLayout, 1200, 800);
         primaryStage.setScene(scene);
+        primaryStage.setMinWidth(1000);
+        primaryStage.setMinHeight(600);
         primaryStage.setOnCloseRequest(e -> {
             controller.beendeSpielVorzeitig();
             Platform.exit();
@@ -156,11 +186,19 @@ public class GuiView implements SpielView {
                 final int finalY = y;
                 feldButton.setOnAction(e -> {
                     if (controller.istSpielAktiv() && !controller.getAktuellerSpieler().istComputer()) {
+                        // Menschlichen Zug loggen (vor dem Zug)
+                        String spielerName = controller.getAktuellerSpieler().getName();
+                        int kommenderZugNummer = controller.getBrett().getAnzahlZuege() + 1;
+                        
                         boolean erfolg = controller.verarbeiteZug(finalX, finalY);
                         if (erfolg) {
+                            nachrichtenArea.appendText(String.format("👤 Zug %02d: %s → (%d,%d)\n", 
+                                                     kommenderZugNummer, spielerName, finalX, finalY));
+                            nachrichtenArea.setScrollTop(Double.MAX_VALUE);
                             aktualisiereAnzeige();
                         } else {
                             statusLabel.setText("Ungültiger Zug! Feld bereits belegt oder Spiel beendet.");
+                            statusLabel.setStyle("-fx-font-size: 12px; -fx-text-alignment: center; -fx-text-fill: #DC143C;");
                         }
                     }
                 });
@@ -293,10 +331,11 @@ public class GuiView implements SpielView {
     @Override
     public void zeigeComputerZug(Spieler computer, Zug zug) {
         Platform.runLater(() -> {
-            statusLabel.setText(computer.getName() + " zieht auf (" + 
+            statusLabel.setText(computer.getName() + " hat gezogen auf (" + 
                               zug.getX() + "," + zug.getY() + ")");
-            nachrichtenArea.appendText("🤖 " + computer.getName() + " zieht auf (" + 
-                                     zug.getX() + "," + zug.getY() + ")\n");
+            String zugNummer = String.format("%02d", zug.getZugNummer());
+            nachrichtenArea.appendText(String.format("🤖 Zug %s: %s → (%d,%d)\n", 
+                                     zugNummer, computer.getName(), zug.getX(), zug.getY()));
             nachrichtenArea.setScrollTop(Double.MAX_VALUE);
         });
     }
@@ -338,7 +377,8 @@ public class GuiView implements SpielView {
     public void zeigeFehlermeldung(String nachricht) {
         Platform.runLater(() -> {
             statusLabel.setText("❌ " + nachricht);
-            nachrichtenArea.appendText("❌ " + nachricht + "\n");
+            statusLabel.setStyle("-fx-font-size: 12px; -fx-text-alignment: center; -fx-text-fill: #DC143C;");
+            nachrichtenArea.appendText("❌ FEHLER: " + nachricht + "\n");
             nachrichtenArea.setScrollTop(Double.MAX_VALUE);
         });
     }
@@ -347,7 +387,8 @@ public class GuiView implements SpielView {
     public void zeigeNachricht(String nachricht) {
         Platform.runLater(() -> {
             statusLabel.setText("ℹ️ " + nachricht);
-            nachrichtenArea.appendText("ℹ️ " + nachricht + "\n");
+            statusLabel.setStyle("-fx-font-size: 12px; -fx-text-alignment: center; -fx-text-fill: #2E8B57;");
+            nachrichtenArea.appendText("ℹ️ INFO: " + nachricht + "\n");
             nachrichtenArea.setScrollTop(Double.MAX_VALUE);
         });
     }

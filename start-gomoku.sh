@@ -2,7 +2,7 @@
 
 echo "================================================"
 echo "  Gomoku - Strategisches Brettspiel"
-echo "  OIL SS2025 - Hochschule Anhalt"
+echo "  OIL SS2025 - Hochschule Hannover"
 echo "================================================"
 echo
 
@@ -13,9 +13,11 @@ if ! command -v java &> /dev/null; then
     exit 1
 fi
 
+jar_name="gomoku-1.0.0-executable.jar"
+
 # Prüfe ob JAR-Datei existiert
-if [ ! -f "gomoku-1.0.0-executable.jar" ]; then
-    echo "FEHLER: gomoku-1.0.0-executable.jar nicht gefunden!"
+if [ ! -f "$jar_name" ]; then
+    echo "FEHLER: $jar_name nicht gefunden!"
     echo "Bitte führe zuerst 'mvn clean package' aus."
     exit 1
 fi
@@ -26,10 +28,10 @@ echo
 # Starte das Spiel
 if [ $# -eq 0 ]; then
     echo "GUI-Modus wird gestartet..."
-    java --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED -jar gomoku-1.0.0-executable.jar
+    java --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED -jar $jar_name
 else
     echo "Konsolen-Modus mit Parametern: $@"
-    java --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED -jar gomoku-1.0.0-executable.jar "$@"
+    java --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED -jar $jar_name "$@"
 fi
 
 echo

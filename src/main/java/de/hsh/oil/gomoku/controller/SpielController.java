@@ -7,6 +7,7 @@ import de.hsh.oil.gomoku.util.StrategieFactory;
 import de.hsh.oil.gomoku.view.KonsoleView;
 import de.hsh.oil.gomoku.view.GuiView;
 import de.hsh.oil.gomoku.view.SpielView;
+import javafx.application.Platform;
 
 /**
  * Controller-Klasse für das Gomoku-Spiel
@@ -226,6 +227,35 @@ public class SpielController {
             }
             
             view.zeigeComputerZug(aktuellerSpieler, computerZug);
+            
+            // Spiel beendet?
+            if (brett.istSpielBeendet()) {
+                beendeSpiel();
+            } else {
+                // Nächster Spieler
+                naechsterSpieler();
+                
+                // Wenn nächster Spieler auch Computer ist, automatisch weiterspielen
+                if (konfiguration.isGuiModus() && aktuellerSpieler.istComputer()) {
+                    Platform.runLater(() -> {
+                        new Thread(() -> {
+                            try {
+                                Thread.sleep(1000); // Längere Pause zwischen Computer-Zügen
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                            
+                            if (spielLaeuft && !brett.istSpielBeendet()) {
+                                Platform.runLater(() -> {
+                                    macheComputerZug();
+                                    view.aktualisiereAnzeige();
+                                });
+                            }
+                        }).start();
+                    });
+                }
+            }
+            
             return true;
         }
         
