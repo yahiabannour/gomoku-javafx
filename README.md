@@ -107,6 +107,8 @@ java -jar gomoku.jar CC S1 S3 D
 ### Kompilierung
 ```bash
 mvn clean compile
+
+mvn compile jar:jar assembly:single
 ```
 
 ### Ausführung

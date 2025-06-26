@@ -19,6 +19,7 @@ public class ParameterValidator {
     private static final Pattern SPIELMODUS_PATTERN = Pattern.compile("^(PP|PC|CC)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern DEBUG_PATTERN = Pattern.compile("^(D|DF)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern STRATEGIE_PATTERN = Pattern.compile("^(S[1-3])$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern GO_PATTERN = Pattern.compile("^Go$");
     
     /**
      * Validiert und parst die Kommandozeilenparameter
@@ -34,6 +35,7 @@ public class ParameterValidator {
         
         SpielKonfiguration konfiguration = new SpielKonfiguration();
         List<KiStrategie> strategien = new ArrayList<>();
+        boolean guiModus = false; // Für "Go" Feature
         
         // Parameter einzeln verarbeiten
         for (String arg : args) {
@@ -41,9 +43,14 @@ public class ParameterValidator {
                 continue;
             }
             
+            String originalArg = arg.trim(); // Original für "Go" Pattern
             arg = arg.trim().toUpperCase();
             
-            if (SPIELMODUS_PATTERN.matcher(arg).matches()) {
+            if (GO_PATTERN.matcher(originalArg).matches()) {
+                // "Go" Parameter - GUI-Modus aktivieren
+                guiModus = true;
+                
+            } else if (SPIELMODUS_PATTERN.matcher(arg).matches()) {
                 // Spielmodus verarbeiten
                 SpielModus modus = SpielModus.vonCode(arg);
                 if (modus != null) {
@@ -89,6 +96,11 @@ public class ParameterValidator {
             if (strategien.size() > 2) {
                 System.err.println("Warnung: Mehr als 2 Strategien angegeben, nur die ersten beiden werden verwendet");
             }
+        }
+        
+        // GUI-Modus setzen falls "Go" verwendet wurde
+        if (guiModus) {
+            konfiguration.setGuiModus(true);
         }
         
         // Logik-Validierung
@@ -158,9 +170,12 @@ public class ParameterValidator {
     private void zeigeMoeglicheParameter() {
         System.err.println("\nGültige Parameter:");
         System.err.println("  Spielmodi: PP, PC, CC");
+        System.err.println("  GUI-Modus: Go (zeigt Simulation in GUI)");
         System.err.println("  Debug: D, DF");
         System.err.println("  Strategien: S1, S2, S3");
-        System.err.println("  Beispiel: PC D S3");
+        System.err.println("  Beispiele:");
+        System.err.println("    PC D S3      (Konsole)");
+        System.err.println("    Go PC D S3   (GUI-Simulation)");
     }
     
     /**

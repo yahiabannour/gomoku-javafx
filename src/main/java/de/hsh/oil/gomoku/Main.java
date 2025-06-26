@@ -1,5 +1,6 @@
 package de.hsh.oil.gomoku;
 
+import javafx.application.Application;
 import de.hsh.oil.gomoku.controller.SpielController;
 import de.hsh.oil.gomoku.util.ParameterValidator;
 import de.hsh.oil.gomoku.model.SpielKonfiguration;
@@ -44,6 +45,11 @@ public class Main {
                 System.out.println("Starte Gomoku im GUI-Modus...");
                 konfiguration = new SpielKonfiguration();
                 konfiguration.setGuiModus(true);
+                
+                // JavaFX-Anwendung starten
+                GomokuApplication.setKonfiguration(konfiguration);
+                Application.launch(GomokuApplication.class, args);
+                
             } else {
                 // Parameter verarbeiten
                 ParameterValidator validator = new ParameterValidator();
@@ -65,11 +71,18 @@ public class Main {
                     System.out.println("  Strategie Spieler 2: " + konfiguration.getStrategie2());
                 }
                 System.out.println();
+                
+                // Prüfen ob GUI-Modus angefordert wird
+                if (konfiguration.isGuiModus()) {
+                    // JavaFX-Anwendung starten
+                    GomokuApplication.setKonfiguration(konfiguration);
+                    Application.launch(GomokuApplication.class, args);
+                } else {
+                    // Konsolen-Modus
+                    SpielController controller = new SpielController(konfiguration);
+                    controller.starteSpiel();
+                }
             }
-            
-            // Spiel-Controller erstellen und starten
-            SpielController controller = new SpielController(konfiguration);
-            controller.starteSpiel();
             
         } catch (Exception e) {
             System.err.println("Fehler beim Starten des Spiels: " + e.getMessage());
@@ -82,9 +95,12 @@ public class Main {
      * Zeigt die Hilfe mit verfügbaren Parametern an
      */
     private static void hilfeAnzeigen() {
-        System.out.println("\nVerwendung: java -jar gomoku.jar [MODUS] [DEBUG] [STRATEGIE]");
+        System.out.println("\nVerwendung: java -jar gomoku.jar [Go] [MODUS] [DEBUG] [STRATEGIE]");
         System.out.println("\nParameter (Reihenfolge beliebig):");
-        System.out.println("  MODUS:");
+        System.out.println("  GUI-MODUS:");
+        System.out.println("    Go  - Startet das Spiel in der GUI (statt Konsole)");
+        System.out.println();
+        System.out.println("  SPIELMODUS:");
         System.out.println("    PP  - Player vs Player (Spieler gegen Spieler)");
         System.out.println("    PC  - Player vs Computer (Spieler gegen Computer)");
         System.out.println("    CC  - Computer vs Computer");
@@ -99,10 +115,10 @@ public class Main {
         System.out.println("    S3  - Minimax-Algorithmus");
         System.out.println();
         System.out.println("Beispiele:");
-        System.out.println("  java -jar gomoku.jar PC D S3");
-        System.out.println("  java -jar gomoku.jar PP DF");
-        System.out.println("  java -jar gomoku.jar CC S1 S2 D");
+        System.out.println("  java -jar gomoku.jar PC D S3       (Konsole)");
+        System.out.println("  java -jar gomoku.jar Go PC D S3    (GUI-Simulation)");
+        System.out.println("  java -jar gomoku.jar Go CC S1 S2 D (GUI Computer vs Computer)");
         System.out.println();
-        System.out.println("Ohne Parameter: Startet im GUI-Modus");
+        System.out.println("Ohne Parameter: Startet im interaktiven GUI-Modus");
     }
 } 
