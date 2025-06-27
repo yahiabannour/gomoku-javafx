@@ -3,6 +3,7 @@ package de.hsh.oil.gomoku.view;
 import de.hsh.oil.gomoku.controller.SpielController;
 import de.hsh.oil.gomoku.model.Spielbrett;
 import de.hsh.oil.gomoku.model.Spieler;
+import de.hsh.oil.gomoku.model.SpielKonfiguration;
 import de.hsh.oil.gomoku.model.Zug;
 
 import javafx.application.Application;
@@ -12,6 +13,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import java.util.Optional;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -40,6 +42,7 @@ public class GuiView implements SpielView {
     private ScrollPane nachrichtenScrollPane;
     private VBox nachrichtenContainer;
     private Button neuesSpielButton;
+    private Button neueRundeButton;
     private Button beendenButton;
     private Button[][] feldButtons;
     
@@ -106,11 +109,11 @@ public class GuiView implements SpielView {
         BorderPane hauptLayout = new BorderPane();
         hauptLayout.setPadding(new Insets(20));
         
-        // Moderner Gradient-Hintergrund
+        // Heller Gradient-Hintergrund für bessere Lesbarkeit
         LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, null,
-            new Stop(0, Color.web("#2E3440")),
-            new Stop(0.5, Color.web("#3B4252")),
-            new Stop(1, Color.web("#434C5E"))
+            new Stop(0, Color.web("#ECEFF4")),
+            new Stop(0.5, Color.web("#D8DEE9")),
+            new Stop(1, Color.web("#C0C5D0"))
         );
         hauptLayout.setBackground(new Background(new BackgroundFill(gradient, null, null)));
         
@@ -127,13 +130,13 @@ public class GuiView implements SpielView {
         
         spielerInfoLabel = new Label();
         spielerInfoLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        spielerInfoLabel.setTextFill(Color.web("#2E3440"));
+        spielerInfoLabel.setTextFill(Color.BLACK);
         spielerInfoLabel.setWrapText(true);
         spielerInfoLabel.setAlignment(Pos.CENTER);
         
         statusLabel = new Label("Bereit zum Spielen");
         statusLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
-        statusLabel.setTextFill(Color.web("#5E81AC"));
+        statusLabel.setTextFill(Color.BLACK);
         statusLabel.setWrapText(true);
         statusLabel.setAlignment(Pos.CENTER);
         
@@ -144,7 +147,7 @@ public class GuiView implements SpielView {
         // View-Optionen
         Label viewLabel = new Label("👁️ Ansichtsmodus");
         viewLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        viewLabel.setTextFill(Color.web("#2E3440"));
+        viewLabel.setTextFill(Color.BLACK);
         
         viewModeGroup = new ToggleGroup();
         
@@ -153,12 +156,12 @@ public class GuiView implements SpielView {
         
         simpleViewRadio = new RadioButton("📄 Einfach");
         simpleViewRadio.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
-        simpleViewRadio.setTextFill(Color.web("#3B4252"));
+        simpleViewRadio.setTextFill(Color.BLACK);
         simpleViewRadio.setToggleGroup(viewModeGroup);
         
         enhancedViewRadio = new RadioButton("💫 Erweitert");
         enhancedViewRadio.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
-        enhancedViewRadio.setTextFill(Color.web("#3B4252"));
+        enhancedViewRadio.setTextFill(Color.BLACK);
         enhancedViewRadio.setToggleGroup(viewModeGroup);
         enhancedViewRadio.setSelected(true); // Default
         
@@ -208,9 +211,10 @@ public class GuiView implements SpielView {
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 0, 5);"
         );
         
-        Label spielfeldLabel = new Label("🎯 Gomoku Spielfeld (15×15)");
+        int boardSize = controller.getBrett().getGroesse();
+        Label spielfeldLabel = new Label("🎯 Gomoku Spielfeld (" + boardSize + "×" + boardSize + ")");
         spielfeldLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        spielfeldLabel.setTextFill(Color.web("#2E3440"));
+        spielfeldLabel.setTextFill(Color.BLACK);
         spielfeldLabel.setEffect(new DropShadow(3, Color.web("#81A1C1")));
         
         spielfeldGrid = new GridPane();
@@ -230,13 +234,13 @@ public class GuiView implements SpielView {
         hauptLayout.setCenter(spielfeldBereich);
         
         // Unterer Bereich - Moderne Buttons
-        HBox buttonBereich = new HBox(20);
+        HBox buttonBereich = new HBox(15);
         buttonBereich.setAlignment(Pos.CENTER);
         buttonBereich.setPadding(new Insets(20, 0, 0, 0));
         
         neuesSpielButton = new Button("🔄 Neues Spiel");
-        neuesSpielButton.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        neuesSpielButton.setPrefSize(150, 45);
+        neuesSpielButton.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        neuesSpielButton.setPrefSize(120, 40);
         neuesSpielButton.setStyle(
             "-fx-background-color: linear-gradient(to bottom, #5E81AC, #4C6C92);" +
             "-fx-text-fill: white;" +
@@ -274,9 +278,40 @@ public class GuiView implements SpielView {
             controller.starteNeuesSpiel();
         });
         
+        // Neue Runde Button (zurück zum Welcome Screen)
+        neueRundeButton = new Button("🏠 Neue Runde");
+        neueRundeButton.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        neueRundeButton.setPrefSize(120, 40);
+        neueRundeButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #88C0D0, #7FB3C3);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);"
+        );
+        neueRundeButton.setOnMouseEntered(e -> neueRundeButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #95CCD6, #8BC6D1);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 12, 0, 0, 5);" +
+            "-fx-scale-x: 1.05;" +
+            "-fx-scale-y: 1.05;"
+        ));
+        neueRundeButton.setOnMouseExited(e -> neueRundeButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #88C0D0, #7FB3C3);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);" +
+            "-fx-scale-x: 1.0;" +
+            "-fx-scale-y: 1.0;"
+        ));
+        neueRundeButton.setOnAction(e -> zeigeWelcomeScreen());
+        
         beendenButton = new Button("❌ Beenden");
-        beendenButton.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        beendenButton.setPrefSize(150, 45);
+        beendenButton.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        beendenButton.setPrefSize(120, 40);
         beendenButton.setStyle(
             "-fx-background-color: linear-gradient(to bottom, #BF616A, #A54E56);" +
             "-fx-text-fill: white;" +
@@ -302,12 +337,9 @@ public class GuiView implements SpielView {
             "-fx-scale-x: 1.0;" +
             "-fx-scale-y: 1.0;"
         ));
-        beendenButton.setOnAction(e -> {
-            controller.beendeSpielVorzeitig();
-            Platform.exit();
-        });
+        beendenButton.setOnAction(e -> zeigeBeendenDialog());
         
-        buttonBereich.getChildren().addAll(neuesSpielButton, beendenButton);
+        buttonBereich.getChildren().addAll(neuesSpielButton, neueRundeButton, beendenButton);
         hauptLayout.setBottom(buttonBereich);
         
         // Scene erstellen und anzeigen
@@ -328,8 +360,8 @@ public class GuiView implements SpielView {
         }
         
         primaryStage.setOnCloseRequest(e -> {
-            controller.beendeSpielVorzeitig();
-            Platform.exit();
+            e.consume(); // Prevent default close
+            zeigeBeendenDialog();
         });
         primaryStage.show();
     }
@@ -588,13 +620,15 @@ public class GuiView implements SpielView {
      */
     private void addWelcomeMessage() {
         Platform.runLater(() -> {
+            int boardSize = controller.getBrett().getGroesse();
             if (enhancedViewRadio.isSelected()) {
                 addEnhancedCard("🎮 Willkommen bei Gomoku!", 
+                    "Spielfeld: " + boardSize + "×" + boardSize + " Gitter\n" +
                     "Ziel: Bringe 5 Steine in eine Reihe (horizontal, vertikal oder diagonal)\n" +
                     "🖱️ Klicke auf ein freies Feld um zu spielen",
                     "#4A90E2", null);
             } else {
-                addSimpleMessage("🎮 Willkommen bei Gomoku! Ziel: 5 in einer Reihe");
+                addSimpleMessage("🎮 Willkommen bei Gomoku (" + boardSize + "×" + boardSize + ")! Ziel: 5 in einer Reihe");
             }
         });
     }
@@ -712,18 +746,18 @@ public class GuiView implements SpielView {
         // Titel
         Label titleLabel = new Label(title);
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 13));
-        titleLabel.setTextFill(Color.web("#2E3440"));
+        titleLabel.setTextFill(Color.BLACK);
         
         // Inhalt
         Label contentLabel = new Label(content);
         contentLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
-        contentLabel.setTextFill(Color.web("#4C566A"));
+        contentLabel.setTextFill(Color.BLACK);
         contentLabel.setWrapText(true);
         
         // Zeitstempel
         Label timestampLabel = new Label("⏰ " + java.time.LocalTime.now().toString().substring(0, 8));
         timestampLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 10));
-        timestampLabel.setTextFill(Color.web("#81A1C1"));
+        timestampLabel.setTextFill(Color.web("#5E5E5E"));
         
         card.getChildren().addAll(titleLabel, contentLabel, timestampLabel);
         
@@ -731,9 +765,9 @@ public class GuiView implements SpielView {
         if (debugInfo != null && !debugInfo.trim().isEmpty()) {
             Label debugLabel = new Label("🔍 " + debugInfo);
             debugLabel.setFont(Font.font("Courier New", FontWeight.NORMAL, 10));
-            debugLabel.setTextFill(Color.web("#8FBCBB"));
+            debugLabel.setTextFill(Color.web("#333333"));
             debugLabel.setWrapText(true);
-            debugLabel.setStyle("-fx-background-color: rgba(143, 188, 187, 0.1); " +
+            debugLabel.setStyle("-fx-background-color: rgba(143, 188, 187, 0.2); " +
                                "-fx-padding: 4px; -fx-background-radius: 4px;");
             card.getChildren().add(debugLabel);
         }
@@ -752,12 +786,15 @@ public class GuiView implements SpielView {
     private void addSimpleMessage(String message) {
         Label messageLabel = new Label(message);
         messageLabel.setFont(Font.font("Courier New", FontWeight.NORMAL, 11));
-        messageLabel.setTextFill(Color.web("#2E3440"));
+        messageLabel.setTextFill(Color.BLACK);
         messageLabel.setWrapText(true);
         messageLabel.setPadding(new Insets(4, 8, 4, 8));
         messageLabel.setStyle(
-            "-fx-background-color: rgba(236, 239, 244, 0.7);" +
-            "-fx-background-radius: 4px;"
+            "-fx-background-color: rgba(255, 255, 255, 0.8);" +
+            "-fx-background-radius: 4px;" +
+            "-fx-border-color: rgba(0, 0, 0, 0.1);" +
+            "-fx-border-width: 1px;" +
+            "-fx-border-radius: 4px;"
         );
         
         nachrichtenContainer.getChildren().add(messageLabel);
@@ -777,13 +814,15 @@ public class GuiView implements SpielView {
             nachrichtenContainer.getChildren().clear();
             
             // Willkommensnachricht wieder hinzufügen
+            int boardSize = controller.getBrett().getGroesse();
             if (enhancedViewRadio.isSelected()) {
                 addEnhancedCard("🎮 Willkommen bei Gomoku!", 
+                    "Spielfeld: " + boardSize + "×" + boardSize + " Gitter\n" +
                     "Ziel: Bringe 5 Steine in eine Reihe (horizontal, vertikal oder diagonal)\n" +
                     "🖱️ Klicke auf ein freies Feld um zu spielen",
                     "#4A90E2", null);
             } else {
-                addSimpleMessage("🎮 Willkommen bei Gomoku! Ziel: 5 in einer Reihe");
+                addSimpleMessage("🎮 Willkommen bei Gomoku (" + boardSize + "×" + boardSize + ")! Ziel: 5 in einer Reihe");
             }
             
             // Alle gespeicherten Nachrichten wieder anzeigen
@@ -803,7 +842,93 @@ public class GuiView implements SpielView {
                         displaySystemMessage(data.args[0]);
                         break;
                 }
+                         }
+         });
+     }
+    
+    /**
+     * Zeigt den Welcome Screen für eine neue Runde
+     */
+    private void zeigeWelcomeScreen() {
+        controller.beendeSpielVorzeitig();
+        primaryStage.close();
+        
+        // Neue Welcome View erstellen
+        Platform.runLater(() -> {
+            try {
+                Stage newStage = new Stage();
+                WelcomeView welcomeView = new WelcomeView(newStage, (config) -> {
+                    // Neue Konfiguration starten
+                    try {
+                        SpielController neuerController = new SpielController(config);
+                        
+                        if (neuerController.getView() instanceof GuiView) {
+                            GuiView neueGuiView = (GuiView) neuerController.getView();
+                            neueGuiView.setPrimaryStage(newStage);
+                        }
+                        
+                        neuerController.starteSpiel();
+                        
+                    } catch (Exception e) {
+                        System.err.println("Fehler beim Starten der neuen Runde: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+                welcomeView.zeigen();
+            } catch (Exception e) {
+                System.err.println("Fehler beim Anzeigen des Welcome Screens: " + e.getMessage());
+                e.printStackTrace();
             }
         });
+    }
+    
+    /**
+     * Zeigt einen Dialog zum Beenden des Spiels mit Optionen
+     */
+    private void zeigeBeendenDialog() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Gomoku beenden");
+        alert.setHeaderText("Was möchten Sie tun?");
+        alert.setContentText("Wählen Sie eine Option:");
+        
+        // Icon für den Dialog
+        try {
+            var iconInputStream = getClass().getResourceAsStream("/icon.png");
+            if (iconInputStream != null) {
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image(iconInputStream));
+            }
+        } catch (Exception e) {
+            // Icon loading failed, continue without icon
+        }
+        
+        // Custom buttons
+        ButtonType welcomeButton = new ButtonType("🏠 Zum Willkommensbildschirm");
+        ButtonType exitButton = new ButtonType("❌ Spiel komplett beenden");
+        ButtonType cancelButton = new ButtonType("↩️ Abbrechen", ButtonBar.ButtonData.CANCEL_CLOSE);
+        
+        alert.getButtonTypes().setAll(welcomeButton, exitButton, cancelButton);
+        
+        // Styling für den Dialog
+        alert.getDialogPane().setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #ECEFF4, #D8DEE9);" +
+            "-fx-font-family: Arial;" +
+            "-fx-font-size: 14px;"
+        );
+        
+        // Response handling
+        Optional<ButtonType> result = alert.showAndWait();
+        
+        if (result.isPresent()) {
+            if (result.get() == welcomeButton) {
+                // Zurück zum Willkommensbildschirm
+                zeigeWelcomeScreen();
+            } else if (result.get() == exitButton) {
+                // Spiel komplett beenden
+                controller.beendeSpielVorzeitig();
+                Platform.exit();
+            }
+            // Bei cancelButton oder X-Button: Nichts tun, Dialog schließt sich
+        }
     }
 } 

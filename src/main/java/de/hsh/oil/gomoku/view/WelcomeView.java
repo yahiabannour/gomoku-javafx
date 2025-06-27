@@ -12,6 +12,7 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import de.hsh.oil.gomoku.model.*;
 
@@ -40,6 +41,17 @@ public class WelcomeView {
     private Button startButton;
     private Label strategieLabel1;
     private Label strategieLabel2;
+    
+    // Erweiterte Einstellungen
+    private TextField debugDateiPfadField;
+    private Button debugDateiAuswahlButton;
+    private Spinner<Integer> bretGroesseSpinner;
+    private Spinner<Integer> minimaxTiefeSpinner;
+    private HBox minimaxTiefeButtons;
+    private ToggleGroup minimaxTiefeGroup;
+    private Label minimaxTiefeLabel;
+    private CheckBox alphaBetaCheckBox;
+    private Label strategieInfoLabel;
     
     /**
      * Callback-Interface für Spielstart
@@ -73,33 +85,37 @@ public class WelcomeView {
         
         // Gradient-Hintergrund
         LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, null,
-            new Stop(0, Color.web("#2E3440")),
-            new Stop(0.5, Color.web("#3B4252")),
-            new Stop(1, Color.web("#434C5E"))
+            new Stop(0, Color.web("#ECEFF4")),
+            new Stop(0.5, Color.web("#D8DEE9")),
+            new Stop(1, Color.web("#C0C5D0"))
         );
         hauptLayout.setBackground(new Background(new BackgroundFill(gradient, null, null)));
         
         // Titel
         Label titelLabel = new Label("🎯 GOMOKU");
         titelLabel.setFont(Font.font("Arial", FontWeight.BOLD, 48));
-        titelLabel.setTextFill(Color.web("#ECEFF4"));
-        titelLabel.setEffect(new DropShadow(10, Color.BLACK));
+        titelLabel.setTextFill(Color.web("#2E3440")); // Dunklere Farbe für bessere Lesbarkeit
+        titelLabel.setEffect(new DropShadow(10, Color.WHITE));
         
         Label untertitelLabel = new Label("Strategisches Brettspiel • 5 in einer Reihe gewinnen");
         untertitelLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 16));
         untertitelLabel.setTextFill(Color.web("#D8DEE9"));
         
-        // Hauptkarten-Container
-        HBox kartenContainer = new HBox(30);
-        kartenContainer.setAlignment(Pos.CENTER);
+        // Hauptinhalt - Alle Einstellungen in einer großen Ansicht
+        HBox inhaltsContainer = new HBox(30);
+        inhaltsContainer.setAlignment(Pos.CENTER);
+        inhaltsContainer.setPadding(new Insets(20));
         
-        // Spielmodus-Karte
-        VBox spielModusKarte = erstelleSpielModusKarte();
+        // Linke Spalte - Spielmodus
+        VBox linkeSpalte = erstelleSpielModusKarte();
         
-        // Einstellungen-Karte
-        VBox einstellungenKarte = erstelleEinstellungenKarte();
+        // Mittlere Spalte - KI-Einstellungen  
+        VBox mittlereSpalte = erstelleKiEinstellungenKarte();
         
-        kartenContainer.getChildren().addAll(spielModusKarte, einstellungenKarte);
+        // Rechte Spalte - Erweiterte Einstellungen
+        VBox rechteSpalte = erstelleErweiterteEinstellungenKarte();
+        
+        inhaltsContainer.getChildren().addAll(linkeSpalte, mittlereSpalte, rechteSpalte);
         
         // Start-Button
         startButton = new Button("🚀 SPIEL STARTEN");
@@ -143,7 +159,7 @@ public class WelcomeView {
         hauptLayout.getChildren().addAll(
             titelLabel, untertitelLabel, 
             new Region(), // Spacer
-            kartenContainer,
+            inhaltsContainer,
             new Region(), // Spacer
             startButton,
             new Region(), // Spacer
@@ -156,7 +172,7 @@ public class WelcomeView {
             .forEach(node -> VBox.setVgrow(node, Priority.ALWAYS));
         
         // Scene erstellen
-        Scene scene = new Scene(hauptLayout, 1000, 700);
+        Scene scene = new Scene(hauptLayout, 1200, 900);
         stage.setTitle("Gomoku - Willkommen");
         stage.setScene(scene);
         stage.setResizable(false);
@@ -174,6 +190,78 @@ public class WelcomeView {
         
         // Initiale Konfiguration
         aktualisiereKonfiguration();
+        aktualisiereSichtbarkeit();
+    }
+    
+    /**
+     * Aktualisiert die Sichtbarkeit der UI-Elemente basierend auf dem gewählten Spielmodus und den KI-Strategien
+     */
+    private void aktualisiereSichtbarkeit() {
+        if (spielModusGroup.getSelectedToggle() == null) return;
+        
+        RadioButton selectedButton = (RadioButton) spielModusGroup.getSelectedToggle();
+        SpielModus modus = (SpielModus) selectedButton.getUserData();
+        
+        // KI-Einstellungen nur bei Computer-Modi anzeigen
+        boolean zeigeKiEinstellungen = modus != SpielModus.PLAYER_VS_PLAYER;
+        boolean zeigeZweiteSpielerKi = modus == SpielModus.COMPUTER_VS_COMPUTER;
+        
+        // KI-Strategien-Karte sichtbar/unsichtbar machen
+        if (strategieLabel1 != null) {
+            strategieLabel1.setVisible(zeigeKiEinstellungen);
+            strategieLabel1.setManaged(zeigeKiEinstellungen);
+        }
+        if (strategie1ComboBox != null) {
+            strategie1ComboBox.setVisible(zeigeKiEinstellungen);
+            strategie1ComboBox.setManaged(zeigeKiEinstellungen);
+        }
+        if (strategieLabel2 != null) {
+            strategieLabel2.setVisible(zeigeZweiteSpielerKi);
+            strategieLabel2.setManaged(zeigeZweiteSpielerKi);
+        }
+        if (strategie2ComboBox != null) {
+            strategie2ComboBox.setVisible(zeigeZweiteSpielerKi);
+            strategie2ComboBox.setManaged(zeigeZweiteSpielerKi);
+        }
+        
+        // Minimax-spezifische Einstellungen nur bei Minimax-Strategie anzeigen
+        boolean zeigeMinimaxEinstellungen = zeigeKiEinstellungen && istMinimaxStrategieAktiv();
+        
+        if (minimaxTiefeLabel != null) {
+            minimaxTiefeLabel.setVisible(zeigeMinimaxEinstellungen);
+            minimaxTiefeLabel.setManaged(zeigeMinimaxEinstellungen);
+        }
+        if (minimaxTiefeButtons != null) {
+            minimaxTiefeButtons.setVisible(zeigeMinimaxEinstellungen);
+            minimaxTiefeButtons.setManaged(zeigeMinimaxEinstellungen);
+        }
+        if (alphaBetaCheckBox != null) {
+            alphaBetaCheckBox.setVisible(zeigeMinimaxEinstellungen);
+            alphaBetaCheckBox.setManaged(zeigeMinimaxEinstellungen);
+        }
+        
+        // Info-Label zeigen wenn KI-Einstellungen sichtbar sind, aber keine Minimax-Strategie aktiv ist
+        if (strategieInfoLabel != null) {
+            boolean zeigeInfo = zeigeKiEinstellungen && !istMinimaxStrategieAktiv();
+            strategieInfoLabel.setVisible(zeigeInfo);
+            strategieInfoLabel.setManaged(zeigeInfo);
+        }
+    }
+    
+    /**
+     * Überprüft, ob eine Minimax-Strategie aktiv ist
+     * @return true wenn mindestens eine Minimax-Strategie ausgewählt ist
+     */
+    private boolean istMinimaxStrategieAktiv() {
+        boolean strategie1IstMinimax = strategie1ComboBox != null && 
+            strategie1ComboBox.isVisible() && 
+            strategie1ComboBox.getValue() == KiStrategie.MINIMAX;
+            
+        boolean strategie2IstMinimax = strategie2ComboBox != null && 
+            strategie2ComboBox.isVisible() && 
+            strategie2ComboBox.getValue() == KiStrategie.MINIMAX;
+            
+        return strategie1IstMinimax || strategie2IstMinimax;
     }
     
     /**
@@ -183,7 +271,7 @@ public class WelcomeView {
         VBox karte = new VBox(15);
         karte.setAlignment(Pos.TOP_CENTER);
         karte.setPadding(new Insets(25));
-        karte.setPrefSize(400, 350);
+        karte.setPrefSize(450, 350); // SPIELMODUS breiter machen
         karte.setStyle(
             "-fx-background-color: rgba(236, 239, 244, 0.95);" +
             "-fx-background-radius: 20;" +
@@ -193,17 +281,22 @@ public class WelcomeView {
         // Titel
         Label titel = new Label("🎮 SPIELMODUS");
         titel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-        titel.setTextFill(Color.web("#2E3440"));
+        titel.setTextFill(Color.BLACK);
         
         // Spielmodus-Optionen
         spielModusGroup = new ToggleGroup();
         
-        RadioButton pvpButton = erstelleRadioButton("👥 Spieler vs Spieler", 
-            "Zwei menschliche Spieler gegeneinander", SpielModus.PLAYER_VS_PLAYER);
-        RadioButton pvcButton = erstelleRadioButton("🤖 Spieler vs Computer", 
-            "Mensch gegen künstliche Intelligenz", SpielModus.PLAYER_VS_COMPUTER);
-        RadioButton cvcButton = erstelleRadioButton("🤖🆚🤖 Computer vs Computer", 
-            "Zwei KI-Strategien gegeneinander", SpielModus.COMPUTER_VS_COMPUTER);
+        VBox pvpContainer = erstelleRadioButton("👥 Spieler vs Spieler (PP)", 
+            "Zwei menschliche Spieler gegeneinander\n• Abwechselnd klicken Sie auf das Spielfeld\n• Erstes Ziel: 5 Steine in einer Reihe", SpielModus.PLAYER_VS_PLAYER, Color.web("#000000"));
+        VBox pvcContainer = erstelleRadioButton("🤖 Spieler vs Computer (PC)", 
+            "Sie spielen gegen eine künstliche Intelligenz\n• Sie sind Spieler X, Computer ist O\n• KI-Strategie wählbar", SpielModus.PLAYER_VS_COMPUTER, Color.web("#000000"));
+        VBox cvcContainer = erstelleRadioButton("🔥 Computer vs Computer (CC)", 
+            "Zwei KI-Strategien spielen gegeneinander\n• Automatisches Spiel zum Zuschauen\n• Beide KI-Strategien wählbar", SpielModus.COMPUTER_VS_COMPUTER, Color.web("#000000"));
+        
+        // RadioButtons aus Containern extrahieren für ToggleGroup
+        RadioButton pvpButton = (RadioButton) pvpContainer.getUserData();
+        RadioButton pvcButton = (RadioButton) pvcContainer.getUserData();
+        RadioButton cvcButton = (RadioButton) cvcContainer.getUserData();
         
         spielModusGroup.getToggles().addAll(pvpButton, pvcButton, cvcButton);
         
@@ -213,21 +306,22 @@ public class WelcomeView {
         // Listener für Spielmodus-Änderungen
         spielModusGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             aktualisiereKonfiguration();
+            aktualisiereSichtbarkeit();
         });
         
-        karte.getChildren().addAll(titel, pvpButton, pvcButton, cvcButton);
+        karte.getChildren().addAll(titel, pvpContainer, pvcContainer, cvcContainer);
         
         return karte;
     }
     
     /**
-     * Erstellt die Einstellungen-Karte
+     * Erstellt die KI-Einstellungen-Karte
      */
-    private VBox erstelleEinstellungenKarte() {
+    private VBox erstelleKiEinstellungenKarte() {
         VBox karte = new VBox(15);
         karte.setAlignment(Pos.TOP_CENTER);
         karte.setPadding(new Insets(25));
-        karte.setPrefSize(400, 350);
+        karte.setPrefSize(360, 350); // KI-Strategien schmaler machen
         karte.setStyle(
             "-fx-background-color: rgba(236, 239, 244, 0.95);" +
             "-fx-background-radius: 20;" +
@@ -235,62 +329,255 @@ public class WelcomeView {
         );
         
         // Titel
-        Label titel = new Label("⚙️ EINSTELLUNGEN");
+        Label titel = new Label("KI-STRATEGIEN");
         titel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         titel.setTextFill(Color.web("#2E3440"));
         
         // KI-Strategien
-        strategieLabel1 = new Label("🧠 KI-Strategie:");
+        strategieLabel1 = new Label("KI-Strategie:");
         strategieLabel1.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
-        strategieLabel1.setTextFill(Color.web("#3B4252"));
+        strategieLabel1.setTextFill(Color.web("#000000"));
         
         strategie1ComboBox = new ComboBox<>();
         strategie1ComboBox.setPrefWidth(300);
-        strategie1ComboBox.setStyle("-fx-font-size: 12px;");
+        strategie1ComboBox.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         strategie1ComboBox.getItems().addAll(KiStrategie.values());
         strategie1ComboBox.setValue(KiStrategie.MINIMAX);
-        strategie1ComboBox.setOnAction(e -> aktualisiereKonfiguration());
+        strategie1ComboBox.setOnAction(e -> {
+            aktualisiereKonfiguration();
+            aktualisiereSichtbarkeit();
+        });
         
-        strategieLabel2 = new Label("🧠 KI-Strategie Spieler 2:");
+        strategieLabel2 = new Label("KI-Strategie Spieler 2:");
         strategieLabel2.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         strategieLabel2.setTextFill(Color.web("#3B4252"));
         strategieLabel2.setVisible(false);
         
         strategie2ComboBox = new ComboBox<>();
         strategie2ComboBox.setPrefWidth(300);
-        strategie2ComboBox.setStyle("-fx-font-size: 12px;");
+        strategie2ComboBox.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         strategie2ComboBox.getItems().addAll(KiStrategie.values());
         strategie2ComboBox.setValue(KiStrategie.EINFACHE_LOGIK);
-        strategie2ComboBox.setOnAction(e -> aktualisiereKonfiguration());
+        strategie2ComboBox.setOnAction(e -> {
+            aktualisiereKonfiguration();
+            aktualisiereSichtbarkeit();
+        });
         strategie2ComboBox.setVisible(false);
         
-        // Debug-Optionen
-        debugCheckBox = new CheckBox("📊 Debug-Modus (Konsole)");
-        debugCheckBox.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
-        debugCheckBox.setTextFill(Color.web("#3B4252"));
-        debugCheckBox.setOnAction(e -> aktualisiereKonfiguration());
+        // Minimax-Tiefe
+        minimaxTiefeLabel = new Label("🎯 Minimax-Suchtiefe:");
+        minimaxTiefeLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        minimaxTiefeLabel.setTextFill(Color.web("#000000"));
         
-        debugDateiCheckBox = new CheckBox("📄 Debug-Ausgabe in Datei");
-        debugDateiCheckBox.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
-        debugDateiCheckBox.setTextFill(Color.web("#3B4252"));
-        debugDateiCheckBox.setOnAction(e -> aktualisiereKonfiguration());
+        // Circular buttons for Minimax depth
+        minimaxTiefeButtons = new HBox(8);
+        minimaxTiefeButtons.setAlignment(Pos.CENTER);
+        minimaxTiefeGroup = new ToggleGroup();
+        
+        for (int i = 1; i <= 6; i++) {
+            ToggleButton button = new ToggleButton(String.valueOf(i));
+            button.setToggleGroup(minimaxTiefeGroup);
+            button.setUserData(i);
+            button.setPrefSize(40, 40);
+            button.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+                "-fx-border-color: #5E81AC;" +
+                "-fx-border-width: 2;" +
+                "-fx-border-radius: 20;" +
+                "-fx-background-radius: 20;" +
+                "-fx-font-weight: bold;" +
+                "-fx-font-size: 14px;"
+            );
+            
+            // Selected style
+            button.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+                if (isSelected) {
+                    button.setStyle(
+                        "-fx-background-color: #5E81AC;" +
+                        "-fx-border-color: #5E81AC;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 20;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-text-fill: white;"
+                    );
+                } else {
+                    button.setStyle(
+                        "-fx-background-color: rgba(255, 255, 255, 0.9);" +
+                        "-fx-border-color: #5E81AC;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 20;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-text-fill: black;"
+                    );
+                }
+                aktualisiereKonfiguration();
+            });
+            
+            if (i == 4) { // Default selection
+                button.setSelected(true);
+            }
+            
+            minimaxTiefeButtons.getChildren().add(button);
+        }
+        
+        // Keep spinner for backward compatibility but hide it
+        minimaxTiefeSpinner = new Spinner<>(1, 6, 4);
+        minimaxTiefeSpinner.setPrefWidth(100);
+        minimaxTiefeSpinner.setVisible(false);
+        minimaxTiefeSpinner.setManaged(false);
+        
+        // Alpha-Beta-Pruning
+        alphaBetaCheckBox = new CheckBox("⚡ Alpha-Beta-Pruning aktiviert");
+        alphaBetaCheckBox.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        alphaBetaCheckBox.setTextFill(Color.web("#000000"));
+        alphaBetaCheckBox.setSelected(true);
+        alphaBetaCheckBox.setOnAction(e -> aktualisiereKonfiguration());
+        
+        // Info-Label für nicht-Minimax Strategien
+        strategieInfoLabel = new Label("ℹ️ Minimax-Einstellungen sind nur für Minimax-Strategie verfügbar");
+        strategieInfoLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
+        strategieInfoLabel.setTextFill(Color.BLACK);
+        strategieInfoLabel.setWrapText(true);
+        strategieInfoLabel.setPrefWidth(350);
+        strategieInfoLabel.setVisible(false);
+        strategieInfoLabel.setManaged(false);
         
         karte.getChildren().addAll(
             titel, 
             strategieLabel1, strategie1ComboBox,
             strategieLabel2, strategie2ComboBox,
-            debugCheckBox, debugDateiCheckBox
+            minimaxTiefeLabel, minimaxTiefeButtons,
+            alphaBetaCheckBox,
+            strategieInfoLabel
         );
         
         return karte;
     }
     
     /**
-     * Erstellt einen styled RadioButton
+     * Erstellt die Erweiterte-Einstellungen-Karte
      */
-    private RadioButton erstelleRadioButton(String text, String beschreibung, SpielModus modus) {
-        VBox container = new VBox(5);
+    private VBox erstelleErweiterteEinstellungenKarte() {
+        VBox karte = new VBox(15);
+        karte.setAlignment(Pos.TOP_CENTER);
+        karte.setPadding(new Insets(25));
+        karte.setPrefSize(360, 350); // Erweiterte Einstellungen schmaler machen
+        karte.setStyle(
+            "-fx-background-color: rgba(236, 239, 244, 0.95);" +
+            "-fx-background-radius: 20;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 10);"
+        );
+        
+        // Titel
+        Label titel = new Label("EINSTELLUNGEN");
+        titel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        titel.setTextFill(Color.web("#2E3440"));
+        
+        // Spielfeld-Größe
+        Label bretGroesseLabel = new Label("📐 Spielfeld-Größe:");
+        bretGroesseLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        bretGroesseLabel.setTextFill(Color.web("#000000"));
+        
+        bretGroesseSpinner = new Spinner<>(10, 20, 15);
+        bretGroesseSpinner.setPrefWidth(100);
+        bretGroesseSpinner.valueProperty().addListener((obs, oldVal, newVal) -> aktualisiereKonfiguration());
+        
+        // Debug-Optionen
+        debugCheckBox = new CheckBox("📊 Debug-Modus (Konsole)");
+        debugCheckBox.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        debugCheckBox.setTextFill(Color.web("#000000"));
+        debugCheckBox.setOnAction(e -> aktualisiereKonfiguration());
+        
+        debugDateiCheckBox = new CheckBox("📄 Debug-Ausgabe in Datei");
+        debugDateiCheckBox.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        debugDateiCheckBox.setTextFill(Color.web("#000000"));
+        
+        // Debug-Datei-Pfad
+        Label debugDateiLabel = new Label("📁 Debug-Datei Pfad:");
+        debugDateiLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        debugDateiLabel.setTextFill(Color.web("#000000"));
+        debugDateiLabel.setVisible(false);
+        
+        HBox debugDateiBox = new HBox(10);
+        debugDateiBox.setAlignment(Pos.CENTER_LEFT);
+        
+        debugDateiPfadField = new TextField();
+        debugDateiPfadField.setPromptText("Leer = auto-generiert in gomoku-logs/");
+        debugDateiPfadField.setPrefWidth(250);
+        debugDateiPfadField.setVisible(false);
+        debugDateiPfadField.textProperty().addListener((obs, oldVal, newVal) -> aktualisiereKonfiguration());
+        
+        debugDateiAuswahlButton = new Button("📂");
+        debugDateiAuswahlButton.setPrefSize(30, 25);
+        debugDateiAuswahlButton.setVisible(false);
+        debugDateiAuswahlButton.setOnAction(e -> waehleDebugDatei());
+        
+        debugDateiBox.getChildren().addAll(debugDateiPfadField, debugDateiAuswahlButton);
+        
+        debugDateiCheckBox.setOnAction(e -> {
+            aktualisiereKonfiguration();
+            debugDateiLabel.setVisible(debugDateiCheckBox.isSelected());
+            debugDateiPfadField.setVisible(debugDateiCheckBox.isSelected());
+            debugDateiAuswahlButton.setVisible(debugDateiCheckBox.isSelected());
+        });
+
+        karte.getChildren().addAll(
+            titel,
+            bretGroesseLabel, bretGroesseSpinner,
+            debugCheckBox, debugDateiCheckBox,
+            debugDateiLabel, debugDateiBox
+        );
+        
+        return karte;
+    }
+    
+    /**
+     * Öffnet einen Datei-Dialog zur Auswahl der Debug-Datei
+     */
+    private void waehleDebugDatei() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Debug-Datei auswählen");
+        fileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("Text-Dateien", "*.txt"),
+            new FileChooser.ExtensionFilter("Log-Dateien", "*.log"),
+            new FileChooser.ExtensionFilter("Alle Dateien", "*.*")
+        );
+        
+        // Standard-Verzeichnis setzen
+        try {
+            java.io.File defaultDir = new java.io.File("gomoku-logs");
+            if (defaultDir.exists()) {
+                fileChooser.setInitialDirectory(defaultDir);
+            }
+        } catch (Exception e) {
+            // Ignorieren - Fallback auf System-Standard
+        }
+        
+        java.io.File selectedFile = fileChooser.showSaveDialog(stage);
+        if (selectedFile != null) {
+            debugDateiPfadField.setText(selectedFile.getAbsolutePath());
+        }
+    }
+    
+    /**
+     * Erstellt einen styled RadioButton-Container mit klarer Beschreibung
+     */
+    private VBox erstelleRadioButton(String text, String beschreibung, SpielModus modus, Color textColor) {
+        VBox container = new VBox(8);
         container.setAlignment(Pos.CENTER_LEFT);
+        container.setPadding(new Insets(15));
+        container.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.8);" +
+            "-fx-background-radius: 15;" +
+            "-fx-border-color: #D8DEE9;" +
+            "-fx-border-radius: 15;" +
+            "-fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);"
+        );
         
         RadioButton radioButton = new RadioButton();
         radioButton.setFont(Font.font("Arial", FontWeight.BOLD, 16));
@@ -299,11 +586,13 @@ public class WelcomeView {
         
         Label hauptText = new Label(text);
         hauptText.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        hauptText.setTextFill(Color.BLACK);
+        hauptText.setTextFill(textColor);
         
         Label beschreibungText = new Label(beschreibung);
-        beschreibungText.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
-        beschreibungText.setTextFill(Color.BLACK);
+        beschreibungText.setFont(Font.font("Arial", FontWeight.NORMAL, 13));
+        beschreibungText.setTextFill(textColor);
+        beschreibungText.setWrapText(true);
+        beschreibungText.setPrefWidth(350);
         
         HBox hbox = new HBox(10);
         hbox.setAlignment(Pos.CENTER_LEFT);
@@ -311,10 +600,34 @@ public class WelcomeView {
         
         container.getChildren().addAll(hbox, beschreibungText);
         
-        // Click-Handler für den ganzen Container
-        container.setOnMouseClicked(e -> radioButton.setSelected(true));
+        // Hover-Effekte
+        container.setOnMouseEntered(e -> container.setStyle(
+            "-fx-background-color: rgba(143, 188, 187, 0.3);" +
+            "-fx-background-radius: 15;" +
+            "-fx-border-color: #88C0D0;" +
+            "-fx-border-radius: 15;" +
+            "-fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 3);"
+        ));
+        container.setOnMouseExited(e -> container.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.8);" +
+            "-fx-background-radius: 15;" +
+            "-fx-border-color: #D8DEE9;" +
+            "-fx-border-radius: 15;" +
+            "-fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);"
+        ));
         
-        return radioButton;
+        // Click-Handler für den ganzen Container
+        container.setOnMouseClicked(e -> {
+            radioButton.setSelected(true);
+            radioButton.fireEvent(new javafx.event.ActionEvent());
+        });
+        
+        // RadioButton für ToggleGroup-Zugriff zugänglich machen
+        container.setUserData(radioButton);
+        
+        return container;
     }
     /**
      * Aktualisiert die Spielkonfiguration basierend auf UI-Eingaben
@@ -343,12 +656,32 @@ public class WelcomeView {
         }
         
         // Debug-Modus
-        if (debugCheckBox.isSelected() && debugDateiCheckBox.isSelected()) {
-            konfiguration.setDebugModus(DebugModus.DATEI);
-        } else if (debugCheckBox.isSelected()) {
-            konfiguration.setDebugModus(DebugModus.KONSOLE);
-        } else {
-            konfiguration.setDebugModus(DebugModus.KEIN);
+        if (debugCheckBox != null && debugDateiCheckBox != null) {
+            if (debugCheckBox.isSelected() && debugDateiCheckBox.isSelected()) {
+                konfiguration.setDebugModus(DebugModus.DATEI);
+                // Debug-Datei-Pfad setzen
+                if (debugDateiPfadField != null && !debugDateiPfadField.getText().trim().isEmpty()) {
+                    konfiguration.setDebugDatei(debugDateiPfadField.getText().trim());
+                } else {
+                    konfiguration.setDebugDatei(null); // Auto-generieren
+                }
+            } else if (debugCheckBox.isSelected()) {
+                konfiguration.setDebugModus(DebugModus.KONSOLE);
+            } else {
+                konfiguration.setDebugModus(DebugModus.KEIN);
+            }
+        }
+        
+        // Erweiterte Einstellungen
+        if (bretGroesseSpinner != null) {
+            konfiguration.setBretGroesse(bretGroesseSpinner.getValue());
+        }
+        if (minimaxTiefeGroup != null && minimaxTiefeGroup.getSelectedToggle() != null) {
+            int tiefe = (Integer) minimaxTiefeGroup.getSelectedToggle().getUserData();
+            konfiguration.setMinimaxTiefe(tiefe);
+        }
+        if (alphaBetaCheckBox != null) {
+            konfiguration.setAlphaBetaPruning(alphaBetaCheckBox.isSelected());
         }
         
         // GUI-Modus aktivieren

@@ -1,6 +1,7 @@
 package de.hsh.oil.gomoku.util;
 
 import de.hsh.oil.gomoku.model.KiStrategie;
+import de.hsh.oil.gomoku.model.SpielKonfiguration;
 import de.hsh.oil.gomoku.strategy.ZugStrategie;
 import de.hsh.oil.gomoku.strategy.ZufallsStrategie;
 import de.hsh.oil.gomoku.strategy.EinfacheLogikStrategie;
@@ -93,6 +94,33 @@ public class StrategieFactory {
         }
         
         return strategie;
+    }
+    
+    /**
+     * Erstellt eine KI-Strategie basierend auf der Konfiguration
+     * 
+     * @param kiStrategie Die gewünschte KI-Strategie
+     * @param config Die Spielkonfiguration mit erweiterten Einstellungen
+     * @return Eine Instanz der entsprechenden Strategie
+     */
+    public static ZugStrategie erstelleStrategie(KiStrategie kiStrategie, SpielKonfiguration config) {
+        if (kiStrategie == null) {
+            return null;
+        }
+        
+        switch (kiStrategie) {
+            case ZUFALL:
+                return new ZufallsStrategie();
+                
+            case EINFACHE_LOGIK:
+                return new EinfacheLogikStrategie();
+                
+            case MINIMAX:
+                return new MinimaxStrategie(config);
+                
+            default:
+                throw new IllegalArgumentException("Unbekannte KI-Strategie: " + kiStrategie);
+        }
     }
     
     /**

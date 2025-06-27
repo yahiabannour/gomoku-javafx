@@ -8,6 +8,9 @@ import de.hsh.oil.gomoku.model.Zug;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -35,7 +38,7 @@ public class DebugLogger {
      */
     public DebugLogger(DebugModus debugModus, String debugDatei) {
         this.debugModus = debugModus;
-        this.debugDatei = debugDatei;
+        this.debugDatei = erstelleDebugPfad(debugDatei);
         this.istAktiv = debugModus != DebugModus.KEIN;
         
         if (debugModus == DebugModus.DATEI) {
@@ -44,14 +47,56 @@ public class DebugLogger {
     }
     
     /**
+     * Erstellt den Debug-Dateipfad und das gomoku-logs Verzeichnis falls nötig
+     * 
+     * @param debugDatei Der gewünschte Pfad oder null für Standard
+     * @return Der finale Debug-Dateipfad
+     */
+    private String erstelleDebugPfad(String debugDatei) {
+        if (debugDatei == null || debugDatei.trim().isEmpty()) {
+            // Standard-Pfad: gomoku-logs/gomoku_debug_YYYYMMDD_HHMMSS.txt
+            try {
+                // Verzeichnis neben der JAR oder im aktuellen Verzeichnis erstellen
+                Path logsDir = Paths.get("gomoku-logs");
+                if (!Files.exists(logsDir)) {
+                    Files.createDirectories(logsDir);
+                }
+                
+                String zeitstempel = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                return logsDir.resolve("gomoku_debug_" + zeitstempel + ".txt").toString();
+                
+            } catch (IOException e) {
+                System.err.println("⚠️ Konnte gomoku-logs Verzeichnis nicht erstellen: " + e.getMessage());
+                return "gomoku_debug.txt"; // Fallback
+            }
+        } else {
+            // Benutzerdefinierten Pfad verwenden, Verzeichnis erstellen falls nötig
+            try {
+                Path pfad = Paths.get(debugDatei);
+                Path verzeichnis = pfad.getParent();
+                if (verzeichnis != null && !Files.exists(verzeichnis)) {
+                    Files.createDirectories(verzeichnis);
+                }
+                return debugDatei;
+            } catch (IOException e) {
+                System.err.println("⚠️ Konnte Debug-Verzeichnis nicht erstellen: " + e.getMessage());
+                return debugDatei; // Verwende trotzdem den gewünschten Pfad
+            }
+        }
+    }
+    
+    /**
      * Initialisiert die Debug-Datei
      */
     private void initialisiereDebugDatei() {
         try {
+            System.out.println("🛠️ Erstelle Debug-Datei: " + debugDatei);
             dateiWriter = new BufferedWriter(new FileWriter(debugDatei, false));
             schreibeKopfzeile();
+            System.out.println("✅ Debug-Datei erfolgreich erstellt: " + debugDatei);
         } catch (IOException e) {
-            System.err.println("Fehler beim Erstellen der Debug-Datei: " + e.getMessage());
+            System.err.println("❌ Fehler beim Erstellen der Debug-Datei: " + e.getMessage());
+            e.printStackTrace();
             istAktiv = false;
         }
     }
@@ -225,6 +270,8 @@ public class DebugLogger {
      * @param nachricht Die auszugebende Nachricht
      */
     private void ausgeben(String nachricht) {
+        if (!istAktiv) return;
+        
         switch (debugModus) {
             case KONSOLE:
                 System.out.println(nachricht);
@@ -236,9 +283,17 @@ public class DebugLogger {
                         dateiWriter.write(nachricht);
                         dateiWriter.newLine();
                         dateiWriter.flush();
+                        // Debug-Info in Konsole (optional)
+                        System.out.println("📝 [DEBUG-FILE] " + nachricht.substring(0, Math.min(60, nachricht.length())) + (nachricht.length() > 60 ? "..." : ""));
                     } catch (IOException e) {
-                        System.err.println("Fehler beim Schreiben in Debug-Datei: " + e.getMessage());
+                        System.err.println("❌ Fehler beim Schreiben in Debug-Datei: " + e.getMessage());
+                        e.printStackTrace();
+                        // Fallback auf Konsole
+                        System.out.println("[FALLBACK] " + nachricht);
                     }
+                } else {
+                    System.err.println("❌ Debug-Datei-Writer ist null! Fallback auf Konsole.");
+                    System.out.println("[FALLBACK] " + nachricht);
                 }
                 break;
                 

@@ -14,7 +14,9 @@ public class SpielKonfiguration {
     private KiStrategie strategie2;
     private boolean guiModus = false;
     private int bretGroesse = 15;
-    private String debugDatei = "gomoku_debug.txt";
+    private String debugDatei = null; // null = auto-generate in gomoku-logs
+    private int minimaxTiefe = 4;
+    private boolean alphaBetaPruning = true;
     
     /**
      * Standard-Konstruktor mit Defaultwerten
@@ -95,6 +97,22 @@ public class SpielKonfiguration {
     
     public void setDebugDatei(String debugDatei) {
         this.debugDatei = debugDatei;
+    }
+    
+    public int getMinimaxTiefe() {
+        return minimaxTiefe;
+    }
+    
+    public void setMinimaxTiefe(int minimaxTiefe) {
+        this.minimaxTiefe = Math.max(1, Math.min(minimaxTiefe, 6)); // Begrenzt auf 1-6
+    }
+    
+    public boolean isAlphaBetaPruning() {
+        return alphaBetaPruning;
+    }
+    
+    public void setAlphaBetaPruning(boolean alphaBetaPruning) {
+        this.alphaBetaPruning = alphaBetaPruning;
     }
     
     /**

@@ -80,14 +80,15 @@ public class SpielController {
                 // KI-Strategie für Computer
                 ZugStrategie strategie = StrategieFactory.erstelleStrategie(
                     konfiguration.getStrategie1() != null ? 
-                    konfiguration.getStrategie1() : konfiguration.getStrategie2()
+                    konfiguration.getStrategie1() : konfiguration.getStrategie2(),
+                    konfiguration
                 );
                 spieler2 = new Spieler("Computer", 'O', strategie);
                 break;
                 
             case COMPUTER_VS_COMPUTER:
-                ZugStrategie strategie1 = StrategieFactory.erstelleStrategie(konfiguration.getStrategie1());
-                ZugStrategie strategie2 = StrategieFactory.erstelleStrategie(konfiguration.getStrategie2());
+                ZugStrategie strategie1 = StrategieFactory.erstelleStrategie(konfiguration.getStrategie1(), konfiguration);
+                ZugStrategie strategie2 = StrategieFactory.erstelleStrategie(konfiguration.getStrategie2(), konfiguration);
                 
                 spieler1 = new Spieler("Computer 1", 'X', strategie1);
                 spieler2 = new Spieler("Computer 2", 'O', strategie2);

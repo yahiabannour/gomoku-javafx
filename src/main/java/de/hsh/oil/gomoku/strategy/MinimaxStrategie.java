@@ -46,6 +46,17 @@ public class MinimaxStrategie implements ZugStrategie {
         this.evaluierteStellungen = 0;
     }
     
+    /**
+     * Konstruktor mit Konfiguration
+     * 
+     * @param config Die Spielkonfiguration mit Minimax-Einstellungen
+     */
+    public MinimaxStrategie(de.hsh.oil.gomoku.model.SpielKonfiguration config) {
+        this(config.getMinimaxTiefe());
+        // Alpha-Beta-Pruning wird automatisch verwendet wenn verfügbar
+        // Die Implementierung unterstützt es bereits
+    }
+    
     @Override
     public Zug berechneZug(Spielbrett brett, Spieler spieler, Spieler gegner) {
         if (brett == null || spieler == null || !brett.hatFreieFelder()) {

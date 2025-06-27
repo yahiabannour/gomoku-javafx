@@ -106,13 +106,14 @@ java -jar gomoku.jar CC S1 S3 D
 
 ### Kompilierung
 ```bash
-mvn clean compile
-
-mvn compile jar:jar assembly:single
+mvn clean compile # mvn compile
+mvn package # mvn compile jar:jar assembly:single
 ```
 
 ### Ausführung
 ```bash
+java --add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED -jar target/gomoku-1.0.0.jar
+
 # Mit Maven
 mvn javafx:run
 
