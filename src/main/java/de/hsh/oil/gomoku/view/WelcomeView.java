@@ -15,6 +15,7 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import de.hsh.oil.gomoku.model.*;
+import de.hsh.oil.gomoku.util.FontAwesome;
 
 /**
  * Willkommens-Ansicht für die Spielkonfiguration
@@ -92,7 +93,7 @@ public class WelcomeView {
         hauptLayout.setBackground(new Background(new BackgroundFill(gradient, null, null)));
         
         // Titel
-        Label titelLabel = new Label("🎯 GOMOKU");
+        Label titelLabel = new Label(FontAwesome.iconText(FontAwesome.TARGET, "GOMOKU"));
         titelLabel.setFont(Font.font("Arial", FontWeight.BOLD, 48));
         titelLabel.setTextFill(Color.web("#2E3440")); // Dunklere Farbe für bessere Lesbarkeit
         titelLabel.setEffect(new DropShadow(10, Color.WHITE));
@@ -118,7 +119,7 @@ public class WelcomeView {
         inhaltsContainer.getChildren().addAll(linkeSpalte, mittlereSpalte, rechteSpalte);
         
         // Start-Button
-        startButton = new Button("🚀 SPIEL STARTEN");
+        startButton = new Button(FontAwesome.iconText(FontAwesome.ROCKET, "SPIEL STARTEN"));
         startButton.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         startButton.setPrefSize(300, 60);
         startButton.setStyle(
@@ -279,18 +280,18 @@ public class WelcomeView {
         );
         
         // Titel
-        Label titel = new Label("🎮 SPIELMODUS");
+        Label titel = new Label(FontAwesome.iconText(FontAwesome.GAMEPAD, "SPIELMODUS"));
         titel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         titel.setTextFill(Color.BLACK);
         
         // Spielmodus-Optionen
         spielModusGroup = new ToggleGroup();
         
-        VBox pvpContainer = erstelleRadioButton("👥 Spieler vs Spieler (PP)", 
+        VBox pvpContainer = erstelleRadioButton(FontAwesome.iconText(FontAwesome.USERS, "Spieler vs Spieler (PP)"), 
             "Zwei menschliche Spieler gegeneinander\n• Abwechselnd klicken Sie auf das Spielfeld\n• Erstes Ziel: 5 Steine in einer Reihe", SpielModus.PLAYER_VS_PLAYER, Color.web("#000000"));
-        VBox pvcContainer = erstelleRadioButton("🤖 Spieler vs Computer (PC)", 
+        VBox pvcContainer = erstelleRadioButton(FontAwesome.iconText(FontAwesome.ROBOT, "Spieler vs Computer (PC)"), 
             "Sie spielen gegen eine künstliche Intelligenz\n• Sie sind Spieler X, Computer ist O\n• KI-Strategie wählbar", SpielModus.PLAYER_VS_COMPUTER, Color.web("#000000"));
-        VBox cvcContainer = erstelleRadioButton("🔥 Computer vs Computer (CC)", 
+        VBox cvcContainer = erstelleRadioButton(FontAwesome.iconText(FontAwesome.FIRE, "Computer vs Computer (CC)"), 
             "Zwei KI-Strategien spielen gegeneinander\n• Automatisches Spiel zum Zuschauen\n• Beide KI-Strategien wählbar", SpielModus.COMPUTER_VS_COMPUTER, Color.web("#000000"));
         
         // RadioButtons aus Containern extrahieren für ToggleGroup
@@ -329,12 +330,12 @@ public class WelcomeView {
         );
         
         // Titel
-        Label titel = new Label("KI-STRATEGIEN");
+        Label titel = new Label(FontAwesome.iconText(FontAwesome.BRAIN, "KI-STRATEGIEN"));
         titel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         titel.setTextFill(Color.web("#2E3440"));
         
         // KI-Strategien
-        strategieLabel1 = new Label("KI-Strategie:");
+        strategieLabel1 = new Label(FontAwesome.iconText(FontAwesome.BRAIN, "KI-Strategie:"));
         strategieLabel1.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         strategieLabel1.setTextFill(Color.web("#000000"));
         
@@ -348,7 +349,7 @@ public class WelcomeView {
             aktualisiereSichtbarkeit();
         });
         
-        strategieLabel2 = new Label("KI-Strategie Spieler 2:");
+        strategieLabel2 = new Label(FontAwesome.iconText(FontAwesome.BRAIN, "KI-Strategie Spieler 2:"));
         strategieLabel2.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         strategieLabel2.setTextFill(Color.web("#3B4252"));
         strategieLabel2.setVisible(false);
@@ -365,7 +366,7 @@ public class WelcomeView {
         strategie2ComboBox.setVisible(false);
         
         // Minimax-Tiefe
-        minimaxTiefeLabel = new Label("🎯 Minimax-Suchtiefe:");
+        minimaxTiefeLabel = new Label(FontAwesome.iconText(FontAwesome.TARGET, "Minimax-Suchtiefe:"));
         minimaxTiefeLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         minimaxTiefeLabel.setTextFill(Color.web("#000000"));
         
@@ -431,14 +432,14 @@ public class WelcomeView {
         minimaxTiefeSpinner.setManaged(false);
         
         // Alpha-Beta-Pruning
-        alphaBetaCheckBox = new CheckBox("⚡ Alpha-Beta-Pruning aktiviert");
+        alphaBetaCheckBox = new CheckBox(FontAwesome.iconText(FontAwesome.BOLT, "Alpha-Beta-Pruning aktiviert"));
         alphaBetaCheckBox.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         alphaBetaCheckBox.setTextFill(Color.web("#000000"));
         alphaBetaCheckBox.setSelected(true);
         alphaBetaCheckBox.setOnAction(e -> aktualisiereKonfiguration());
         
         // Info-Label für nicht-Minimax Strategien
-        strategieInfoLabel = new Label("ℹ️ Minimax-Einstellungen sind nur für Minimax-Strategie verfügbar");
+        strategieInfoLabel = new Label(FontAwesome.iconText(FontAwesome.INFO_CIRCLE, "Minimax-Einstellungen sind nur für Minimax-Strategie verfügbar"));
         strategieInfoLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
         strategieInfoLabel.setTextFill(Color.BLACK);
         strategieInfoLabel.setWrapText(true);
@@ -473,12 +474,12 @@ public class WelcomeView {
         );
         
         // Titel
-        Label titel = new Label("EINSTELLUNGEN");
+        Label titel = new Label(FontAwesome.iconText(FontAwesome.COG, "EINSTELLUNGEN"));
         titel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         titel.setTextFill(Color.web("#2E3440"));
         
         // Spielfeld-Größe
-        Label bretGroesseLabel = new Label("📐 Spielfeld-Größe:");
+        Label bretGroesseLabel = new Label(FontAwesome.iconText(FontAwesome.RULER, "Spielfeld-Größe:"));
         bretGroesseLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         bretGroesseLabel.setTextFill(Color.web("#000000"));
         
@@ -487,17 +488,17 @@ public class WelcomeView {
         bretGroesseSpinner.valueProperty().addListener((obs, oldVal, newVal) -> aktualisiereKonfiguration());
         
         // Debug-Optionen
-        debugCheckBox = new CheckBox("📊 Debug-Modus (Konsole)");
+        debugCheckBox = new CheckBox(FontAwesome.iconText(FontAwesome.CHART_BAR, "Debug-Modus (Konsole)"));
         debugCheckBox.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         debugCheckBox.setTextFill(Color.web("#000000"));
         debugCheckBox.setOnAction(e -> aktualisiereKonfiguration());
         
-        debugDateiCheckBox = new CheckBox("📄 Debug-Ausgabe in Datei");
+        debugDateiCheckBox = new CheckBox(FontAwesome.iconText(FontAwesome.FILE_TEXT, "Debug-Ausgabe in Datei"));
         debugDateiCheckBox.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         debugDateiCheckBox.setTextFill(Color.web("#000000"));
         
         // Debug-Datei-Pfad
-        Label debugDateiLabel = new Label("📁 Debug-Datei Pfad:");
+        Label debugDateiLabel = new Label(FontAwesome.iconText(FontAwesome.FOLDER, "Debug-Datei Pfad:"));
         debugDateiLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         debugDateiLabel.setTextFill(Color.web("#000000"));
         debugDateiLabel.setVisible(false);
@@ -511,7 +512,7 @@ public class WelcomeView {
         debugDateiPfadField.setVisible(false);
         debugDateiPfadField.textProperty().addListener((obs, oldVal, newVal) -> aktualisiereKonfiguration());
         
-        debugDateiAuswahlButton = new Button("📂");
+        debugDateiAuswahlButton = new Button(FontAwesome.getIcon(FontAwesome.FOLDER));
         debugDateiAuswahlButton.setPrefSize(30, 25);
         debugDateiAuswahlButton.setVisible(false);
         debugDateiAuswahlButton.setOnAction(e -> waehleDebugDatei());
@@ -564,7 +565,7 @@ public class WelcomeView {
     }
     
     /**
-     * Erstellt einen styled RadioButton-Container mit klarer Beschreibung
+     * Erstellt einen styled RadioButton-Container mit Tooltip für Beschreibung
      */
     private VBox erstelleRadioButton(String text, String beschreibung, SpielModus modus, Color textColor) {
         VBox container = new VBox(8);
@@ -588,17 +589,19 @@ public class WelcomeView {
         hauptText.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         hauptText.setTextFill(textColor);
         
-        Label beschreibungText = new Label(beschreibung);
-        beschreibungText.setFont(Font.font("Arial", FontWeight.NORMAL, 13));
-        beschreibungText.setTextFill(textColor);
-        beschreibungText.setWrapText(true);
-        beschreibungText.setPrefWidth(350);
+        // Tooltip-Icon für Beschreibung
+        Label tooltipIcon = FontAwesome.createIcon(FontAwesome.QUESTION_CIRCLE, 14, Color.web("#5E81AC"));
+        Tooltip tooltip = new Tooltip(beschreibung);
+        tooltip.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
+        tooltip.setWrapText(true);
+        tooltip.setMaxWidth(300);
+        Tooltip.install(tooltipIcon, tooltip);
         
         HBox hbox = new HBox(10);
         hbox.setAlignment(Pos.CENTER_LEFT);
-        hbox.getChildren().addAll(radioButton, hauptText);
+        hbox.getChildren().addAll(radioButton, hauptText, tooltipIcon);
         
-        container.getChildren().addAll(hbox, beschreibungText);
+        container.getChildren().add(hbox);
         
         // Hover-Effekte
         container.setOnMouseEntered(e -> container.setStyle(

@@ -5,6 +5,7 @@ import de.hsh.oil.gomoku.model.Spielbrett;
 import de.hsh.oil.gomoku.model.Spieler;
 import de.hsh.oil.gomoku.model.SpielKonfiguration;
 import de.hsh.oil.gomoku.model.Zug;
+import de.hsh.oil.gomoku.util.FontAwesome;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -145,7 +146,7 @@ public class GuiView implements SpielView {
         separator.setStyle("-fx-background-color: #81A1C1;");
         
         // View-Optionen
-        Label viewLabel = new Label("👁️ Ansichtsmodus");
+        Label viewLabel = new Label(FontAwesome.iconText(FontAwesome.EYE, "Ansichtsmodus"));
         viewLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         viewLabel.setTextFill(Color.BLACK);
         
@@ -154,12 +155,12 @@ public class GuiView implements SpielView {
         HBox viewOptionsBox = new HBox(15);
         viewOptionsBox.setAlignment(Pos.CENTER_LEFT);
         
-        simpleViewRadio = new RadioButton("📄 Einfach");
+        simpleViewRadio = new RadioButton(FontAwesome.iconText(FontAwesome.FILE_TEXT, "Einfach"));
         simpleViewRadio.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
         simpleViewRadio.setTextFill(Color.BLACK);
         simpleViewRadio.setToggleGroup(viewModeGroup);
         
-        enhancedViewRadio = new RadioButton("💫 Erweitert");
+        enhancedViewRadio = new RadioButton(FontAwesome.iconText(FontAwesome.MAGIC, "Erweitert"));
         enhancedViewRadio.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
         enhancedViewRadio.setTextFill(Color.BLACK);
         enhancedViewRadio.setToggleGroup(viewModeGroup);
@@ -238,7 +239,7 @@ public class GuiView implements SpielView {
         buttonBereich.setAlignment(Pos.CENTER);
         buttonBereich.setPadding(new Insets(20, 0, 0, 0));
         
-        neuesSpielButton = new Button("🔄 Neues Spiel");
+        neuesSpielButton = new Button(FontAwesome.iconText(FontAwesome.REFRESH, "Neues Spiel"));
         neuesSpielButton.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         neuesSpielButton.setPrefSize(120, 40);
         neuesSpielButton.setStyle(
@@ -279,7 +280,7 @@ public class GuiView implements SpielView {
         });
         
         // Neue Runde Button (zurück zum Welcome Screen)
-        neueRundeButton = new Button("🏠 Neue Runde");
+        neueRundeButton = new Button(FontAwesome.iconText(FontAwesome.HOME, "Neue Runde"));
         neueRundeButton.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         neueRundeButton.setPrefSize(120, 40);
         neueRundeButton.setStyle(
@@ -309,7 +310,7 @@ public class GuiView implements SpielView {
         ));
         neueRundeButton.setOnAction(e -> zeigeWelcomeScreen());
         
-        beendenButton = new Button("❌ Beenden");
+        beendenButton = new Button(FontAwesome.iconText(FontAwesome.TIMES, "Beenden"));
         beendenButton.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         beendenButton.setPrefSize(120, 40);
         beendenButton.setStyle(
@@ -622,13 +623,13 @@ public class GuiView implements SpielView {
         Platform.runLater(() -> {
             int boardSize = controller.getBrett().getGroesse();
             if (enhancedViewRadio.isSelected()) {
-                addEnhancedCard("🎮 Willkommen bei Gomoku!", 
+                addEnhancedCard(FontAwesome.iconText(FontAwesome.GAMEPAD, "Willkommen bei Gomoku!"), 
                     "Spielfeld: " + boardSize + "×" + boardSize + " Gitter\n" +
                     "Ziel: Bringe 5 Steine in eine Reihe (horizontal, vertikal oder diagonal)\n" +
-                    "🖱️ Klicke auf ein freies Feld um zu spielen",
+                    "Klicke auf ein freies Feld um zu spielen",
                     "#4A90E2", null);
             } else {
-                addSimpleMessage("🎮 Willkommen bei Gomoku (" + boardSize + "×" + boardSize + ")! Ziel: 5 in einer Reihe");
+                addSimpleMessage(FontAwesome.iconText(FontAwesome.GAMEPAD, "Willkommen bei Gomoku (" + boardSize + "×" + boardSize + ")! Ziel: 5 in einer Reihe"));
             }
         });
     }
@@ -685,10 +686,10 @@ public class GuiView implements SpielView {
      */
     private void displayThinkingMessage(String computerName) {
         if (enhancedViewRadio.isSelected()) {
-            addEnhancedCard("🤖 " + computerName + " denkt...", 
+            addEnhancedCard(FontAwesome.iconText(FontAwesome.ROBOT, computerName + " denkt..."), 
                 "Berechne optimalen Zug...", "#FF8C00", null);
         } else {
-            addSimpleMessage("🤖 " + computerName + " denkt...");
+            addSimpleMessage(FontAwesome.iconText(FontAwesome.ROBOT, computerName + " denkt..."));
         }
     }
     
@@ -722,9 +723,9 @@ public class GuiView implements SpielView {
      */
     private void displaySystemMessage(String message) {
         if (enhancedViewRadio.isSelected()) {
-            addEnhancedCard("ℹ️ System", message, "#FFA500", null);
+            addEnhancedCard(FontAwesome.iconText(FontAwesome.INFO_CIRCLE, "System"), message, "#FFA500", null);
         } else {
-            addSimpleMessage("ℹ️ " + message);
+            addSimpleMessage(FontAwesome.iconText(FontAwesome.INFO_CIRCLE, message));
         }
     }
     
@@ -755,7 +756,7 @@ public class GuiView implements SpielView {
         contentLabel.setWrapText(true);
         
         // Zeitstempel
-        Label timestampLabel = new Label("⏰ " + java.time.LocalTime.now().toString().substring(0, 8));
+        Label timestampLabel = new Label(FontAwesome.iconText(FontAwesome.CLOCK, java.time.LocalTime.now().toString().substring(0, 8)));
         timestampLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 10));
         timestampLabel.setTextFill(Color.web("#5E5E5E"));
         
@@ -763,7 +764,7 @@ public class GuiView implements SpielView {
         
         // Debug-Info hinzufügen falls vorhanden
         if (debugInfo != null && !debugInfo.trim().isEmpty()) {
-            Label debugLabel = new Label("🔍 " + debugInfo);
+            Label debugLabel = new Label(FontAwesome.iconText(FontAwesome.SEARCH, debugInfo));
             debugLabel.setFont(Font.font("Courier New", FontWeight.NORMAL, 10));
             debugLabel.setTextFill(Color.web("#333333"));
             debugLabel.setWrapText(true);
@@ -903,9 +904,9 @@ public class GuiView implements SpielView {
         }
         
         // Custom buttons
-        ButtonType welcomeButton = new ButtonType("🏠 Zum Willkommensbildschirm");
-        ButtonType exitButton = new ButtonType("❌ Spiel komplett beenden");
-        ButtonType cancelButton = new ButtonType("↩️ Abbrechen", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType welcomeButton = new ButtonType(FontAwesome.iconText(FontAwesome.HOME, "Zum Willkommensbildschirm"));
+        ButtonType exitButton = new ButtonType(FontAwesome.iconText(FontAwesome.TIMES, "Spiel komplett beenden"));
+        ButtonType cancelButton = new ButtonType("Abbrechen", ButtonBar.ButtonData.CANCEL_CLOSE);
         
         alert.getButtonTypes().setAll(welcomeButton, exitButton, cancelButton);
         
