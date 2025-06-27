@@ -34,20 +34,18 @@ public class Main {
             System.out.println("=".repeat(50));
             System.out.println("  " + PROGRAMMNAME + " - Strategisches Brettspiel");
             System.out.println("  Version: " + VERSION);
-            System.out.println("  OIL SS2025 - Hochschule Anhalt");
+            System.out.println("  OIL SS2025 - Hochschule Hannover");
             System.out.println("=".repeat(50));
             
             // Parameter validieren und Konfiguration erstellen
             SpielKonfiguration konfiguration;
             
             if (args.length == 0) {
-                // GUI-Modus ohne Parameter starten
-                System.out.println("Starte Gomoku im GUI-Modus...");
-                konfiguration = new SpielKonfiguration();
-                konfiguration.setGuiModus(true);
+                // GUI-Modus ohne Parameter starten - Welcome Screen zeigen
+                System.out.println("Starte Gomoku Welcome Screen...");
                 
-                // JavaFX-Anwendung starten
-                GomokuApplication.setKonfiguration(konfiguration);
+                // Keine Konfiguration setzen -> Welcome Screen wird angezeigt
+                GomokuApplication.setKonfiguration(null);
                 Application.launch(GomokuApplication.class, args);
                 
             } else {

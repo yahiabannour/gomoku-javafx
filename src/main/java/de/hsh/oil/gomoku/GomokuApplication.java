@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import de.hsh.oil.gomoku.controller.SpielController;
 import de.hsh.oil.gomoku.model.SpielKonfiguration;
+import de.hsh.oil.gomoku.view.WelcomeView;
 
 /**
  * JavaFX Application-Klasse für das Gomoku-Spiel
@@ -17,6 +18,7 @@ import de.hsh.oil.gomoku.model.SpielKonfiguration;
 public class GomokuApplication extends Application {
     
     private static SpielKonfiguration konfiguration;
+    private Stage primaryStage;
     
     /**
      * Setzt die Spielkonfiguration für die Anwendung
@@ -35,15 +37,41 @@ public class GomokuApplication extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
+        this.primaryStage = primaryStage;
+        
         try {
-            // Standard-Konfiguration wenn keine gesetzt wurde
+            // Wenn keine Konfiguration übergeben wurde (Default-Start), Welcome-Screen zeigen
             if (konfiguration == null) {
-                konfiguration = new SpielKonfiguration();
-                konfiguration.setGuiModus(true);
+                zeigeWelcomeScreen();
+            } else {
+                // Direkt das Spiel mit übergebener Konfiguration starten
+                starteSpielMitKonfiguration(konfiguration);
             }
             
+        } catch (Exception e) {
+            System.err.println("Fehler beim Starten der GUI: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+    
+    /**
+     * Zeigt den Welcome-Screen für die Spielkonfiguration
+     */
+    private void zeigeWelcomeScreen() {
+        WelcomeView welcomeView = new WelcomeView(primaryStage, this::starteSpielMitKonfiguration);
+        welcomeView.zeigen();
+    }
+    
+    /**
+     * Startet das Spiel mit der gegebenen Konfiguration
+     * 
+     * @param config Die Spielkonfiguration
+     */
+    private void starteSpielMitKonfiguration(SpielKonfiguration config) {
+        try {
             // Spiel-Controller erstellen
-            SpielController controller = new SpielController(konfiguration);
+            SpielController controller = new SpielController(config);
             
             // GUI-View erstellen und Primary Stage setzen
             if (controller.getView() instanceof de.hsh.oil.gomoku.view.GuiView) {
@@ -55,9 +83,8 @@ public class GomokuApplication extends Application {
             controller.starteSpiel();
             
         } catch (Exception e) {
-            System.err.println("Fehler beim Starten der GUI: " + e.getMessage());
+            System.err.println("Fehler beim Starten des Spiels: " + e.getMessage());
             e.printStackTrace();
-            throw e;
         }
     }
     

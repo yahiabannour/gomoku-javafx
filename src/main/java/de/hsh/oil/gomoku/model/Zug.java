@@ -14,6 +14,7 @@ public class Zug {
     private final Spieler spieler;
     private final LocalDateTime zeitpunkt;
     private final int zugNummer;
+    private String debugInfo;
     
     /**
      * Konstruktor für einen Spielzug
@@ -68,6 +69,14 @@ public class Zug {
     
     public int getZugNummer() {
         return zugNummer;
+    }
+    
+    public String getDebugInfo() {
+        return debugInfo;
+    }
+    
+    public void setDebugInfo(String debugInfo) {
+        this.debugInfo = debugInfo;
     }
     
     /**

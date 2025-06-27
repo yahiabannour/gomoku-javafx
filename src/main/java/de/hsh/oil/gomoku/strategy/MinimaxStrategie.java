@@ -59,7 +59,10 @@ public class MinimaxStrategie implements ZugStrategie {
         if (brett.getAnzahlZuege() == 0) {
             int mitte = brett.getGroesse() / 2;
             berechnungsZeit = System.currentTimeMillis() - startZeit;
-            return new Zug(mitte, mitte, spieler, 1);
+            Zug erstZug = new Zug(mitte, mitte, spieler, 1);
+            erstZug.setDebugInfo(String.format("Zeit: %dms, Evaluationen: %d", 
+                berechnungsZeit, evaluierteStellungen));
+            return erstZug;
         }
         
         // Minimax mit Alpha-Beta-Pruning ausführen
@@ -67,6 +70,12 @@ public class MinimaxStrategie implements ZugStrategie {
                                      true, spieler, gegner);
         
         berechnungsZeit = System.currentTimeMillis() - startZeit;
+        
+        // Debug-Info zum Zug hinzufügen
+        if (result.besterZug != null) {
+            result.besterZug.setDebugInfo(String.format("Zeit: %dms, Evaluationen: %,d", 
+                berechnungsZeit, evaluierteStellungen));
+        }
         
         return result.besterZug;
     }

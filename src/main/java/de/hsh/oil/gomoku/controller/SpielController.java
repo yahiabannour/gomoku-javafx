@@ -110,6 +110,26 @@ public class SpielController {
         if (konfiguration.isGuiModus()) {
             // GUI-Modus: Event-driven
             view.starteGui();
+            
+            // Wenn erstes Spieler Computer ist, ersten Zug initiieren
+            if (aktuellerSpieler.istComputer()) {
+                Platform.runLater(() -> {
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(1000); // Kurze Pause für GUI-Aufbau
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                        
+                        if (spielLaeuft && !brett.istSpielBeendet()) {
+                            Platform.runLater(() -> {
+                                macheComputerZug();
+                                view.aktualisiereAnzeige();
+                            });
+                        }
+                    }).start();
+                });
+            }
         } else {
             // Konsole-Modus: Linear
             spielSchleife();
@@ -336,6 +356,26 @@ public class SpielController {
         
         if (!konfiguration.isGuiModus()) {
             spielSchleife();
+        } else {
+            // GUI-Modus: Ersten Computer-Zug initiieren falls nötig
+            if (aktuellerSpieler.istComputer()) {
+                Platform.runLater(() -> {
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(500); // Kurze Pause
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                        
+                        if (spielLaeuft && !brett.istSpielBeendet()) {
+                            Platform.runLater(() -> {
+                                macheComputerZug();
+                                view.aktualisiereAnzeige();
+                            });
+                        }
+                    }).start();
+                });
+            }
         }
     }
     
