@@ -1,98 +1,95 @@
-**Deutsch** | [English](README.en.md)
+**English** | [Deutsch](README.de.md)
 
-# 🎮 Gomoku – Fünf in einer Reihe (JavaFX) ⚫⚪
+# 🎮 Gomoku – Five in a Row (JavaFX) ⚫⚪
 
-![Java](https://img.shields.io/badge/java-17-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
-![JavaFX](https://img.shields.io/badge/javafx-20-%23007396.svg?style=for-the-badge&logo=openjdk&logoColor=white)
-![Maven](https://img.shields.io/badge/maven-%23C71A36.svg?style=for-the-badge&logo=apachemaven&logoColor=white)
+A JavaFX implementation of **Gomoku** (Five-in-a-Row) with three AI opponents – from random moves up to a
+**Minimax search with alpha-beta pruning** – playable in a modern GUI or straight from the console. Built with
+**Java 17**, **JavaFX** and **Maven**.
 
-Eine vollständige Umsetzung des Brettspiels **Gomoku** (fünf in einer Reihe auf einem 15×15-Feld) in Java 17 und
-JavaFX – spielbar in einer grafischen Oberfläche oder in der Konsole, gegen eine andere Person oder gegen eine von
-drei Computer-Strategien.
-
-Abschlussprojekt im Fach *Objektorientierte Implementierungssprache (OIL)* an der Hochschule Hannover,
-Sommersemester 2025.
-
-| 🏠 Startbildschirm | ♟️ Laufendes Spiel (Computer gegen Computer) |
+| 🏠 Start screen | ♟️ Game in progress (computer vs computer) |
 |---|---|
-| ![Startbildschirm](docs/startbildschirm.png) | ![Spiel](docs/spiel.png) |
+| ![Start screen](docs/startbildschirm.png) | ![Game](docs/spiel.png) |
 
----
+## 📋 Requirements
 
-## ✨ Funktionen
+- Java 17+
+- No Maven installation needed – the Maven wrapper is included
 
-### 🕹️ Spielmodi
-* **Spieler gegen Spieler**, **Spieler gegen Computer** und **Computer gegen Computer**
-* **JavaFX-Oberfläche** mit Startbildschirm und Spieleinstellungen, dazu ein **Konsolenmodus** für das Terminal
-
-### 🤖 KI-Strategien (pro Spieler wählbar)
-* **S1 – Zufall**: Zufallszüge, beschränkt auf die Umgebung vorhandener Steine
-* **S2 – Regelbasiert**: vervollständigt eigene Reihen und blockt Drohungen des Gegners
-* **S3 – Minimax mit Alpha-Beta-Pruning**: heuristische Stellungsbewertung, Suchtiefe von 1 bis 6 einstellbar
-  (Standard: 4)
-* **📋 Zugprotokoll**: für jeden KI-Zug Rechenzeit und Anzahl der bewerteten Stellungen – im Test über
-  **10 Millionen Stellungen** für einen einzigen Zug
-
-### 💾 Speichern & Werkzeuge
-* **Spielstände als XML speichern und laden** (JAXB), inklusive Zugverlauf und Sieg-/Remis-Statistik
-* **Kommandozeilenparameter**, geprüft mit **regulären Ausdrücken**, in beliebiger Reihenfolge
-* **Debug-Ausgabe** in der Konsole (`D`) oder in eine Datei (`DF`)
-* **Windows-`.exe`** über Launch4j
-
----
-
-## 🏗️ Architektur
-
-**Model-View-Controller** mit dem **Strategy-Pattern** für die KI-Gegner und einer **Factory**, die die Strategie
-aus ihrem Parameter (`S1`–`S3`) erzeugt.
-
-```
-de.hsh.oil.gomoku/
-├── Main.java, GomokuApplication.java   Einstiegspunkte, Parameterverarbeitung
-├── model/        Spielbrett, Spieler, Züge, Konfiguration, Spielstände, Statistik
-├── controller/   SpielController – Spielablauf, Zugreihenfolge, Gewinnerkennung
-├── view/         GuiView, WelcomeView (JavaFX), KonsoleView (Terminal)
-├── strategy/     Interface ZugStrategie + Zufalls-, Regel- und Minimax-Strategie
-└── util/         ParameterValidator (Regex), StrategieFactory, XmlSaveManager, DebugLogger
-```
-
-Da die Views nur mit dem Controller sprechen, steuert dieselbe Spiellogik sowohl die Oberfläche als auch die Konsole.
-
----
-
-## 🛠️ Starten
-
-**Voraussetzung:** Java 17+. Maven muss nicht installiert sein – der Maven-Wrapper lädt es herunter, und JavaFX ist
-als Abhängigkeit eingebunden.
+## 🚀 Build & Run
 
 ```bash
-./mvnw package                     # Windows: mvnw.cmd package
+# Build the executable JAR (Windows: mvnw.cmd package)
+./mvnw package
+
+# Run the JAR
 java -jar target/gomoku-1.0.0-executable.jar
 ```
 
-### ⌨️ Kommandozeilenparameter
+## 💻 Command-Line Arguments
 
-Ohne Parameter öffnet sich der Startbildschirm. Die Parameter lassen sich beliebig kombinieren:
+You can skip the start screen and launch a game directly. Arguments may appear in any order and are validated with
+**regular expressions**.
 
-| Parameter | Bedeutung |
-|-----------|-----------|
-| `PP` / `PC` / `CC` | Spieler gegen Spieler / Spieler gegen Computer / Computer gegen Computer |
-| `S1` / `S2` / `S3` | KI-Strategie: Zufall / regelbasiert / Minimax |
-| `D` / `DF` | Debug-Ausgabe in der Konsole / in einer Datei |
-| `Go` | Die gewählte Konfiguration in der Oberfläche statt in der Konsole starten |
+| Argument | Description |
+|----------|-------------|
+| *(none)* | Opens the start screen |
+| `PP` | Player vs Player |
+| `PC` | Player vs Computer |
+| `CC` | Computer vs Computer |
+| `S1` / `S2` / `S3` | AI strategy (one per computer player) |
+| `D` | Debug output to the console |
+| `DF` | Debug output to a file |
+| `Go` | Play the chosen setup in the GUI instead of the console |
+
+**🤖 AI Strategies:**
+
+| Code | Name | Uses depth | Description |
+|------|------|------------|-------------|
+| `S1` | 🎲 Random | No | Random moves, limited to the area around existing stones |
+| `S2` | 🛡️ Rule-based | No | Completes its own lines and blocks the opponent's threats |
+| `S3` | 🧠 Minimax | Yes | Minimax search with alpha-beta pruning and a heuristic board evaluation |
+
+The search depth (1–6, default 4) is chosen on the start screen and applies only to S3.
+
+**📝 Examples:**
 
 ```bash
-java -jar target/gomoku-1.0.0-executable.jar PC S3 D        # Konsole, gegen Minimax, mit Debug-Ausgabe
-java -jar target/gomoku-1.0.0-executable.jar Go CC S2 S3    # Oberfläche, regelbasierte KI gegen Minimax
+java -jar target/gomoku-1.0.0-executable.jar PP                # Player vs Player on the console
+java -jar target/gomoku-1.0.0-executable.jar PC S3 D           # against Minimax, with debug output
+java -jar target/gomoku-1.0.0-executable.jar Go CC S2 S3       # GUI: rule-based AI vs Minimax
 ```
 
-### 🪟 Windows-Programm
+## 📁 Project Structure
 
-`build-exe.bat` baut das JAR und verpackt es mit Launch4j zu `releases/Gomoku-1.0.0.exe` – Details in
-[BUILD-README.md](BUILD-README.md).
+```
+de.hsh.oil.gomoku/
+├── Main.java, GomokuApplication.java   Entry points, parameter handling
+├── model/        Board, players, moves, configuration, save games, statistics
+├── controller/   SpielController – game flow, turn order, win detection
+├── view/         GuiView, WelcomeView (JavaFX), KonsoleView (terminal)
+├── strategy/     ZugStrategie interface + random, rule-based and Minimax strategies
+└── util/         ParameterValidator (regex), StrategieFactory, XmlSaveManager, DebugLogger
+```
 
----
+## 🧩 Design Patterns
 
-## 🧰 Technologien
+| Pattern | Where |
+|---------|-------|
+| **MVC** | `model` / `view` / `controller` are fully separated – the same game logic drives the GUI and the console |
+| **Strategy** | `ZugStrategie` – AI algorithms swapped without changing the controller |
+| **Factory** | `StrategieFactory` maps the codes `S1`–`S3` to strategy instances |
 
-Java 17 · JavaFX 20 · Maven · JAXB (XML) · Launch4j
+## ✨ Game Features
+
+- 📐 Configurable board size from 10×10 to 20×20 (default 15×15)
+- ⚫ Standard Gomoku rules – five in a row wins, horizontally, vertically or diagonally
+- 🎮 Three game modes: Player vs Player, Player vs Computer, Computer vs Computer
+- 🧠 Adjustable Minimax search depth (1–6)
+- 📜 **Move log** with the position of every move – and for every AI move its computing time and the number of
+  evaluated positions (over **10 million** for a single move in my tests)
+- 💾 Save/load games as XML (JAXB), including the move history and win/draw statistics
+- 🐛 Debug mode – console output (`D`) or a log file (`DF`)
+- 🖥️ Console mode for playing directly in the terminal
+- 🪟 Windows `.exe` via Launch4j (`build-exe.bat`, see [BUILD-README.md](BUILD-README.md))
+
+The interface is in German.
