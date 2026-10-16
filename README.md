@@ -1,75 +1,80 @@
-# Gomoku – JavaFX board game with Minimax AI
+# Gomoku – Brettspiel in JavaFX mit Minimax-KI
 
-A complete implementation of the board game **Gomoku** (five in a row on a 15×15 board) in Java 17 and JavaFX,
-playable in a graphical interface or on the console, against a friend or against one of three computer opponents.
+Eine vollständige Umsetzung des Brettspiels **Gomoku** (fünf in einer Reihe auf einem 15×15-Feld) in Java 17 und
+JavaFX. Gespielt wird in einer grafischen Oberfläche oder in der Konsole, gegen eine andere Person oder gegen eine
+von drei Computer-Strategien.
 
-Built as the final project for the course *Objektorientierte Implementierungssprache (OIL)* at
-Hochschule Hannover, summer semester 2025.
+Entstanden als Abschlussprojekt im Fach *Objektorientierte Implementierungssprache (OIL)* an der
+Hochschule Hannover, Sommersemester 2025.
 
-<!-- Add a screenshot here: docs/screenshot.png -->
+| Startbildschirm | Laufendes Spiel (Computer gegen Computer) |
+|---|---|
+| ![Startbildschirm](docs/startbildschirm.png) | ![Spiel](docs/spiel.png) |
 
-## Features
+## Funktionen
 
-- **Three game modes**: Player vs Player, Player vs Computer, Computer vs Computer
-- **Three AI strategies**, selectable per player:
-  - **S1** – random moves, limited to the area around existing stones
-  - **S2** – rule-based: completes its own lines and blocks the opponent's threats
-  - **S3** – **Minimax with alpha-beta pruning** (search depth 4) and a heuristic board evaluation
-- **JavaFX GUI** with a welcome screen, game settings and save/load dialogs
-- **Console mode** for playing entirely in the terminal
-- **Save and load games as XML** (JAXB), including the move history and win/draw statistics
-- **Command-line parameters** validated with regular expressions, in any order
-- **Debug output** to the console (`D`) or to a log file (`DF`)
-- Windows `.exe` build via Launch4j
+- **Drei Spielmodi**: Spieler gegen Spieler, Spieler gegen Computer, Computer gegen Computer
+- **Drei KI-Strategien**, pro Spieler wählbar:
+  - **S1** – Zufallszüge, beschränkt auf die Umgebung vorhandener Steine
+  - **S2** – regelbasiert: vervollständigt eigene Reihen und blockt Drohungen des Gegners
+  - **S3** – **Minimax mit Alpha-Beta-Pruning** und heuristischer Stellungsbewertung; die Suchtiefe ist von 1 bis 6
+    einstellbar (Standard: 4)
+- **JavaFX-Oberfläche** mit Startbildschirm, Spieleinstellungen und einem Zugprotokoll, das für jeden KI-Zug die
+  Rechenzeit und die Anzahl der bewerteten Stellungen anzeigt
+- **Konsolenmodus** zum Spielen direkt im Terminal
+- **Spielstände als XML speichern und laden** (JAXB), inklusive Zugverlauf und Sieg-/Remis-Statistik
+- **Kommandozeilenparameter**, geprüft mit regulären Ausdrücken, in beliebiger Reihenfolge
+- **Debug-Ausgabe** in der Konsole (`D`) oder in eine Datei (`DF`)
+- Windows-`.exe` über Launch4j
 
-## Architecture
+## Architektur
 
-The project follows **Model-View-Controller**, with the **Strategy pattern** for the AI opponents and a
-**Factory** that creates a strategy from its parameter (`S1`–`S3`).
+Das Projekt folgt dem **Model-View-Controller**-Muster. Die KI-Gegner sind mit dem **Strategy-Pattern**
+umgesetzt, eine **Factory** erzeugt die Strategie aus ihrem Parameter (`S1`–`S3`).
 
 ```
 de.hsh.oil.gomoku/
-├── Main.java, GomokuApplication.java   Entry points, parameter handling
-├── model/        Board, players, moves, configuration, save games, statistics
-├── controller/   SpielController – game flow, turn order, win detection
-├── view/         GuiView, WelcomeView (JavaFX), KonsoleView (terminal)
-├── strategy/     ZugStrategie interface + Random, Rule-based and Minimax strategies
-└── util/         ParameterValidator (regex), StrategieFactory, XmlSaveManager, DebugLogger
+├── Main.java, GomokuApplication.java   Einstiegspunkte, Parameterverarbeitung
+├── model/        Spielbrett, Spieler, Züge, Konfiguration, Spielstände, Statistik
+├── controller/   SpielController – Spielablauf, Zugreihenfolge, Gewinnerkennung
+├── view/         GuiView, WelcomeView (JavaFX), KonsoleView (Terminal)
+├── strategy/     Interface ZugStrategie + Zufalls-, Regel- und Minimax-Strategie
+└── util/         ParameterValidator (Regex), StrategieFactory, XmlSaveManager, DebugLogger
 ```
 
-Because the views only talk to the controller, the same game logic drives both the GUI and the console.
+Da die Views nur mit dem Controller sprechen, steuert dieselbe Spiellogik sowohl die Oberfläche als auch die Konsole.
 
-## Getting started
+## Starten
 
-Requirements: **Java 17+**. Maven does not need to be installed; the Maven wrapper downloads it.
-JavaFX is pulled in as a Maven dependency.
+Voraussetzung: **Java 17+**. Maven muss nicht installiert sein, der Maven-Wrapper lädt es herunter.
+JavaFX wird als Maven-Abhängigkeit eingebunden.
 
 ```bash
 ./mvnw package                     # Windows: mvnw.cmd package
 java -jar target/gomoku-1.0.0-executable.jar
 ```
 
-### Command-line parameters
+### Kommandozeilenparameter
 
-Without parameters the game opens the welcome screen. Parameters can be combined in any order:
+Ohne Parameter öffnet sich der Startbildschirm. Die Parameter lassen sich beliebig kombinieren:
 
-| Parameter | Meaning |
-|-----------|---------|
-| `PP` / `PC` / `CC` | Player vs Player / Player vs Computer / Computer vs Computer |
-| `S1` / `S2` / `S3` | AI strategy: random / rule-based / Minimax |
-| `D` / `DF` | Debug output to the console / to a file |
-| `Go` | Start the given configuration in the GUI instead of the console |
+| Parameter | Bedeutung |
+|-----------|-----------|
+| `PP` / `PC` / `CC` | Spieler gegen Spieler / Spieler gegen Computer / Computer gegen Computer |
+| `S1` / `S2` / `S3` | KI-Strategie: Zufall / regelbasiert / Minimax |
+| `D` / `DF` | Debug-Ausgabe in der Konsole / in einer Datei |
+| `Go` | Die gewählte Konfiguration in der Oberfläche statt in der Konsole starten |
 
 ```bash
-java -jar target/gomoku-1.0.0-executable.jar PC S3 D        # console, against Minimax, with debug output
-java -jar target/gomoku-1.0.0-executable.jar Go CC S1 S3    # GUI, random AI vs Minimax
+java -jar target/gomoku-1.0.0-executable.jar PC S3 D        # Konsole, gegen Minimax, mit Debug-Ausgabe
+java -jar target/gomoku-1.0.0-executable.jar Go CC S2 S3    # Oberfläche, regelbasierte KI gegen Minimax
 ```
 
-### Windows executable
+### Windows-Programm
 
-`build-exe.bat` builds the jar and wraps it into `releases/Gomoku-1.0.0.exe` with Launch4j.
-See [BUILD-README.md](BUILD-README.md) for details.
+`build-exe.bat` baut das JAR und verpackt es mit Launch4j zu `releases/Gomoku-1.0.0.exe`.
+Details stehen in [BUILD-README.md](BUILD-README.md).
 
-## Tech stack
+## Technologien
 
 Java 17 · JavaFX 20 · Maven · JAXB (XML) · Launch4j
