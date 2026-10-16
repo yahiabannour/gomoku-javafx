@@ -1,3 +1,5 @@
+**Deutsch** | [English](README.en.md)
+
 # Gomoku – Brettspiel in JavaFX mit Minimax-KI
 
 Eine vollständige Umsetzung des Brettspiels **Gomoku** (fünf in einer Reihe auf einem 15×15-Feld) in Java 17 und
