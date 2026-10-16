@@ -210,4 +210,26 @@ public class Spieler {
                            name, gewonneneSpiele, verloreneSpiele, unentschiedeneSpiele, 
                            getGewinnrate() * 100);
     }
+    
+    /**
+     * Gibt die Anzahl der Siege zurück (Alias für getGewonneneSpiele)
+     */
+    public int getSiege() {
+        return gewonneneSpiele;
+    }
+    
+    /**
+     * Gibt die Anzahl der gespielten Spiele zurück (Alias für getGesamtSpiele)
+     */
+    public int getGespielteSpiele() {
+        return getGesamtSpiele();
+    }
+    
+    /**
+     * Gibt die Gesamtanzahl der Züge zurück (geschätzt basierend auf gespielten Spielen)
+     */
+    public int getGesamtZuege() {
+        // Schätzung: Durchschnittlich 20 Züge pro Spiel
+        return getGesamtSpiele() * 20;
+    }
 } 

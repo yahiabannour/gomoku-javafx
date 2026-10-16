@@ -4,6 +4,7 @@ import de.hsh.oil.gomoku.model.*;
 import de.hsh.oil.gomoku.strategy.ZugStrategie;
 import de.hsh.oil.gomoku.util.DebugLogger;
 import de.hsh.oil.gomoku.util.StrategieFactory;
+import de.hsh.oil.gomoku.util.XmlSaveManager;
 import de.hsh.oil.gomoku.view.KonsoleView;
 import de.hsh.oil.gomoku.view.GuiView;
 import de.hsh.oil.gomoku.view.SpielView;
@@ -26,6 +27,7 @@ public class SpielController {
     private Spieler aktuellerSpieler;
     private SpielView view;
     private DebugLogger debugLogger;
+    private XmlSaveManager saveManager;
     private boolean spielLaeuft;
     
     /**
@@ -52,6 +54,9 @@ public class SpielController {
             konfiguration.getDebugModus(),
             konfiguration.getDebugDatei()
         );
+        
+        // XML Save Manager initialisieren
+        saveManager = new XmlSaveManager();
         
         // View erstellen
         if (konfiguration.isGuiModus()) {
@@ -436,5 +441,154 @@ public class SpielController {
      */
     private Spieler getGegner(Spieler spieler) {
         return (spieler == spieler1) ? spieler2 : spieler1;
+    }
+    
+    /**
+     * Gibt Informationen über die XML-Datenbank aus
+     */
+    public void printDatabaseInfo() {
+        if (saveManager != null) {
+            saveManager.printDatabaseInfo();
+        }
+    }
+    
+    /**
+     * Speichert das aktuelle Spiel
+     * 
+     * @param saveName Name für den Spielstand
+     * @return true wenn erfolgreich gespeichert
+     */
+    public boolean speichereSpiel(String saveName) {
+        if (saveManager == null) {
+            System.err.println("❌ Save Manager nicht initialisiert");
+            return false;
+        }
+        
+        boolean erfolg = saveManager.saveGame(this, saveName);
+        if (erfolg) {
+            view.zeigeNachricht("💾 Spiel gespeichert: " + saveName);
+        } else {
+            view.zeigeNachricht("❌ Fehler beim Speichern");
+        }
+        return erfolg;
+    }
+    
+    /**
+     * Speichert das aktuelle Spiel an einem benutzerdefinierten Pfad
+     * 
+     * @param saveName Name für den Spielstand
+     * @param filePath Vollständiger Pfad zur Datei
+     * @return true wenn erfolgreich gespeichert
+     */
+    public boolean speichereSpielMitPfad(String saveName, String filePath) {
+        if (saveManager == null) {
+            System.err.println("❌ Save Manager nicht initialisiert");
+            return false;
+        }
+        
+        boolean erfolg = saveManager.saveGameToPath(this, saveName, filePath);
+        if (erfolg) {
+            view.zeigeNachricht("💾 Spiel gespeichert: " + filePath);
+        } else {
+            view.zeigeNachricht("❌ Fehler beim Speichern");
+        }
+        return erfolg;
+    }
+    
+    /**
+     * Lädt einen Spielstand
+     * 
+     * @param saveId ID des zu ladenden Spielstands
+     * @return true wenn erfolgreich geladen
+     */
+    public boolean ladeSpiel(String saveId) {
+        if (saveManager == null) {
+            System.err.println("❌ Save Manager nicht initialisiert");
+            return false;
+        }
+        
+        GameSave gameSave = saveManager.loadGame(saveId);
+        if (gameSave == null) {
+            view.zeigeNachricht("❌ Spielstand konnte nicht geladen werden");
+            return false;
+        }
+        
+        return restoreFromSave(gameSave);
+    }
+    
+    /**
+     * Stellt das Spiel aus einem GameSave wieder her
+     */
+    private boolean restoreFromSave(GameSave gameSave) {
+        try {
+            // Spiel stoppen
+            spielLaeuft = false;
+            
+            // Brett zurücksetzen
+            brett = new Spielbrett(gameSave.getBoardSize());
+            
+            // Brett-Zustand wiederherstellen
+            for (int y = 0; y < gameSave.getBoardSize(); y++) {
+                String row = gameSave.getBoardRows().get(y);
+                for (int x = 0; x < gameSave.getBoardSize(); x++) {
+                    char feld = row.charAt(x);
+                    if (feld != '.') {
+                        brett.setFeld(x, y, feld);
+                    }
+                }
+            }
+            
+            // Züge wiederherstellen
+            brett.getZugHistorie().clear();
+            for (SavedMove savedMove : gameSave.getMoves()) {
+                Spieler spieler = savedMove.getPlayerIndex() == 0 ? spieler1 : spieler2;
+                Zug zug = new Zug(savedMove.getX(), savedMove.getY(), spieler, savedMove.getMoveNumber());
+                brett.getZugHistorie().add(zug);
+            }
+            
+            // Aktueller Spieler
+            aktuellerSpieler = gameSave.getCurrentPlayerIndex() == 0 ? spieler1 : spieler2;
+            
+            // Spiel-Status
+            spielLaeuft = gameSave.isGameActive();
+            
+            // View aktualisieren
+            view.aktualisiereAnzeige();
+            view.zeigeNachricht("📂 Spielstand geladen: " + gameSave.getSaveName());
+            
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("❌ Fehler beim Wiederherstellen: " + e.getMessage());
+            view.zeigeNachricht("❌ Fehler beim Laden des Spielstands");
+            return false;
+        }
+    }
+    
+    /**
+     * Listet alle verfügbaren Spielstände auf
+     */
+    public java.util.List<GameSave> getVerfuegbareSaves() {
+        if (saveManager == null) {
+            return new java.util.ArrayList<>();
+        }
+        return saveManager.listSaves();
+    }
+    
+    /**
+     * Löscht einen Spielstand
+     */
+    public boolean loescheSave(String saveId) {
+        if (saveManager == null) {
+            return false;
+        }
+        return saveManager.deleteSave(saveId);
+    }
+    
+    /**
+     * Prüft ob die XML-Datenbank bereit ist
+     */
+    public boolean istSaveSystemBereit() {
+        return saveManager != null && saveManager.isDatabaseReady();
     }
 } 

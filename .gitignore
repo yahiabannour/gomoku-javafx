@@ -21,6 +21,9 @@
 
 # Allow final gomoku jar
 gomoku-*.jar
+releases/
+gomoku-logs/
+gomoku-db/
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
@@ -39,10 +42,6 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
-# Exclude maven wrapper
-.mvn/
-mvnw
-mvnw.cmd
 
 # IDE - IntelliJ IDEA
 .idea/
@@ -111,3 +110,7 @@ gomoku_debug.txt
 .env
 .env.local
 .env.*.local 
+# Runtime data written by the game
+gomoku-db/
+gomoku-logs/
+releases/

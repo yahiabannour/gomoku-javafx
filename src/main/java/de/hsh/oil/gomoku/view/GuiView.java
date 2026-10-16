@@ -1,6 +1,7 @@
 package de.hsh.oil.gomoku.view;
 
 import de.hsh.oil.gomoku.controller.SpielController;
+import de.hsh.oil.gomoku.model.GameSave;
 import de.hsh.oil.gomoku.model.Spielbrett;
 import de.hsh.oil.gomoku.model.Spieler;
 import de.hsh.oil.gomoku.model.SpielKonfiguration;
@@ -14,6 +15,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.stage.FileChooser;
 import java.util.Optional;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
@@ -25,6 +27,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 /**
  * JavaFX GUI-View für das Gomoku-Spiel
@@ -340,7 +343,68 @@ public class GuiView implements SpielView {
         ));
         beendenButton.setOnAction(e -> zeigeBeendenDialog());
         
-        buttonBereich.getChildren().addAll(neuesSpielButton, neueRundeButton, beendenButton);
+        // Save/Load Buttons
+        Button speichernButton = new Button(FontAwesome.iconText(FontAwesome.FILE_TEXT, "Speichern"));
+        speichernButton.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        speichernButton.setPrefSize(120, 40);
+        speichernButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #A3BE8C, #8FAC72);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);"
+        );
+        speichernButton.setOnMouseEntered(e -> speichernButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #B0CB99, #9CB87F);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 12, 0, 0, 5);" +
+            "-fx-scale-x: 1.05;" +
+            "-fx-scale-y: 1.05;"
+        ));
+        speichernButton.setOnMouseExited(e -> speichernButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #A3BE8C, #8FAC72);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);" +
+            "-fx-scale-x: 1.0;" +
+            "-fx-scale-y: 1.0;"
+        ));
+        speichernButton.setOnAction(e -> zeigeSpeichernDialog());
+        
+        Button ladenButton = new Button(FontAwesome.iconText(FontAwesome.FOLDER, "Laden"));
+        ladenButton.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        ladenButton.setPrefSize(120, 40);
+        ladenButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #EBCB8B, #D7B76F);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);"
+        );
+        ladenButton.setOnMouseEntered(e -> ladenButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #F2D896, #E4C47C);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 12, 0, 0, 5);" +
+            "-fx-scale-x: 1.05;" +
+            "-fx-scale-y: 1.05;"
+        ));
+        ladenButton.setOnMouseExited(e -> ladenButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #EBCB8B, #D7B76F);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 25;" +
+            "-fx-border-radius: 25;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);" +
+            "-fx-scale-x: 1.0;" +
+            "-fx-scale-y: 1.0;"
+        ));
+        ladenButton.setOnAction(e -> zeigeLadenDialog());
+
+        buttonBereich.getChildren().addAll(neuesSpielButton, neueRundeButton, speichernButton, ladenButton, beendenButton);
         hauptLayout.setBottom(buttonBereich);
         
         // Scene erstellen und anzeigen
@@ -365,6 +429,8 @@ public class GuiView implements SpielView {
             zeigeBeendenDialog();
         });
         primaryStage.show();
+        
+        VBox.setVgrow(spielfeldBereich, Priority.ALWAYS);
     }
     
     /**
@@ -858,21 +924,30 @@ public class GuiView implements SpielView {
         Platform.runLater(() -> {
             try {
                 Stage newStage = new Stage();
-                WelcomeView welcomeView = new WelcomeView(newStage, (config) -> {
-                    // Neue Konfiguration starten
-                    try {
-                        SpielController neuerController = new SpielController(config);
-                        
-                        if (neuerController.getView() instanceof GuiView) {
-                            GuiView neueGuiView = (GuiView) neuerController.getView();
-                            neueGuiView.setPrimaryStage(newStage);
+                WelcomeView welcomeView = new WelcomeView(newStage, new WelcomeView.WelcomeCallback() {
+                    @Override
+                    public void onGameStart(SpielKonfiguration config) {
+                        // Neue Konfiguration starten
+                        try {
+                            SpielController neuerController = new SpielController(config);
+                            
+                            if (neuerController.getView() instanceof GuiView) {
+                                GuiView neueGuiView = (GuiView) neuerController.getView();
+                                neueGuiView.setPrimaryStage(newStage);
+                            }
+                            
+                            neuerController.starteSpiel();
+                            
+                        } catch (Exception e) {
+                            System.err.println("Fehler beim Starten der neuen Runde: " + e.getMessage());
+                            e.printStackTrace();
                         }
-                        
-                        neuerController.starteSpiel();
-                        
-                    } catch (Exception e) {
-                        System.err.println("Fehler beim Starten der neuen Runde: " + e.getMessage());
-                        e.printStackTrace();
+                    }
+                    
+                    @Override
+                    public void onGameLoad() {
+                        // Load functionality - not needed for new game welcome screen
+                        System.out.println("Load not supported from new game welcome screen");
                     }
                 });
                 welcomeView.zeigen();
@@ -917,6 +992,69 @@ public class GuiView implements SpielView {
             "-fx-font-size: 14px;"
         );
         
+        // Button-Styling nach Dialog-Erstellung
+        Platform.runLater(() -> {
+            Button exitBtn = (Button) alert.getDialogPane().lookupButton(exitButton);
+            Button welcomeBtn = (Button) alert.getDialogPane().lookupButton(welcomeButton);
+            Button cancelBtn = (Button) alert.getDialogPane().lookupButton(cancelButton);
+            
+            // Roter Exit-Button
+            if (exitBtn != null) {
+                exitBtn.setStyle(
+                    "-fx-background-color: linear-gradient(to bottom, #BF616A, #A54E56);" +
+                    "-fx-text-fill: white;" +
+                    "-fx-font-weight: bold;" +
+                    "-fx-background-radius: 20;" +
+                    "-fx-border-radius: 20;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);"
+                );
+                exitBtn.setOnMouseEntered(e -> exitBtn.setStyle(
+                    "-fx-background-color: linear-gradient(to bottom, #D08770, #B8705F);" +
+                    "-fx-text-fill: white;" +
+                    "-fx-font-weight: bold;" +
+                    "-fx-background-radius: 20;" +
+                    "-fx-border-radius: 20;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0, 0, 3);" +
+                    "-fx-scale-x: 1.05;" +
+                    "-fx-scale-y: 1.05;"
+                ));
+                exitBtn.setOnMouseExited(e -> exitBtn.setStyle(
+                    "-fx-background-color: linear-gradient(to bottom, #BF616A, #A54E56);" +
+                    "-fx-text-fill: white;" +
+                    "-fx-font-weight: bold;" +
+                    "-fx-background-radius: 20;" +
+                    "-fx-border-radius: 20;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);" +
+                    "-fx-scale-x: 1.0;" +
+                    "-fx-scale-y: 1.0;"
+                ));
+            }
+            
+            // Blauer Welcome-Button
+            if (welcomeBtn != null) {
+                welcomeBtn.setStyle(
+                    "-fx-background-color: linear-gradient(to bottom, #5E81AC, #4C6C92);" +
+                    "-fx-text-fill: white;" +
+                    "-fx-font-weight: bold;" +
+                    "-fx-background-radius: 20;" +
+                    "-fx-border-radius: 20;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);"
+                );
+            }
+            
+            // Grauer Cancel-Button
+            if (cancelBtn != null) {
+                cancelBtn.setStyle(
+                    "-fx-background-color: linear-gradient(to bottom, #D8DEE9, #C0C5D0);" +
+                    "-fx-text-fill: #2E3440;" +
+                    "-fx-font-weight: bold;" +
+                    "-fx-background-radius: 20;" +
+                    "-fx-border-radius: 20;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);"
+                );
+            }
+        });
+        
         // Response handling
         Optional<ButtonType> result = alert.showAndWait();
         
@@ -931,5 +1069,133 @@ public class GuiView implements SpielView {
             }
             // Bei cancelButton oder X-Button: Nichts tun, Dialog schließt sich
         }
+    }
+    
+    /**
+     * Zeigt einen Dialog zum Speichern des Spiels
+     */
+    private void zeigeSpeichernDialog() {
+        if (!controller.istSaveSystemBereit()) {
+            zeigeFehlermeldung("❌ Save-System nicht verfügbar");
+            return;
+        }
+        
+        // File Chooser für Save-Location
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("💾 Spiel Speichern");
+        fileChooser.setInitialFileName("Mein_Gomoku_Spiel.xml");
+        
+        // Extension Filter für XML-Dateien
+        FileChooser.ExtensionFilter xmlFilter = new FileChooser.ExtensionFilter("XML Dateien (*.xml)", "*.xml");
+        fileChooser.getExtensionFilters().add(xmlFilter);
+        
+        // Standard-Verzeichnis auf gomoku-db/saves setzen
+        try {
+            java.io.File savesDir = new java.io.File("gomoku-db/saves");
+            if (savesDir.exists() && savesDir.isDirectory()) {
+                fileChooser.setInitialDirectory(savesDir);
+            }
+        } catch (Exception e) {
+            // Fallback: Aktuelles Verzeichnis verwenden
+        }
+        
+        // File Chooser anzeigen
+        java.io.File selectedFile = fileChooser.showSaveDialog(primaryStage);
+        
+        if (selectedFile != null) {
+            String fileName = selectedFile.getName();
+            String saveName = fileName.endsWith(".xml") ? fileName.substring(0, fileName.length() - 4) : fileName;
+            
+            // Speichern mit custom path
+            boolean erfolg = controller.speichereSpielMitPfad(saveName, selectedFile.getAbsolutePath());
+            if (erfolg) {
+                addSystemMessage("💾 Spiel erfolgreich gespeichert: " + selectedFile.getAbsolutePath());
+            } else {
+                zeigeFehlermeldung("❌ Fehler beim Speichern des Spiels");
+            }
+        }
+    }
+    
+    /**
+     * Zeigt einen Dialog zum Laden eines Spiels
+     */
+    public void zeigeLadenDialog() {
+        if (!controller.istSaveSystemBereit()) {
+            zeigeFehlermeldung("❌ Save-System nicht verfügbar");
+            return;
+        }
+        
+        // Verfügbare Saves laden
+        java.util.List<GameSave> saves = controller.getVerfuegbareSaves();
+        
+        if (saves.isEmpty()) {
+            zeigeNachricht("ℹ️ Keine gespeicherten Spiele gefunden");
+            return;
+        }
+        
+        // Choice Dialog erstellen
+        ChoiceDialog<GameSave> dialog = new ChoiceDialog<>(saves.get(0), saves);
+        dialog.setTitle("📂 Spiel Laden");
+        dialog.setHeaderText("Wählen Sie einen Spielstand zum Laden:");
+        dialog.setContentText("Spielstand:");
+        
+        // Dialog stylen
+        dialog.getDialogPane().setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #ECEFF4, #D8DEE9);" +
+            "-fx-border-color: #81A1C1;" +
+            "-fx-border-width: 2px;" +
+            "-fx-border-radius: 10px;" +
+            "-fx-background-radius: 10px;"
+        );
+        
+        // Custom string converter für bessere Anzeige
+        ComboBox<GameSave> comboBox = (ComboBox<GameSave>) dialog.getDialogPane().lookup(".combo-box");
+        if (comboBox != null) {
+            comboBox.setConverter(new StringConverter<GameSave>() {
+                @Override
+                public String toString(GameSave save) {
+                    if (save == null) return "";
+                    return String.format("%s (%s - %d Züge)", 
+                                       save.getSaveName(), 
+                                       save.getTimestamp().substring(0, 16).replace("T", " "), 
+                                       save.getTotalMoves());
+                }
+                
+                @Override
+                public GameSave fromString(String string) {
+                    return null; // Nicht benötigt
+                }
+            });
+        }
+        
+        // Icon setzen
+        try {
+            var iconInputStream = getClass().getResourceAsStream("/icon.png");
+            if (iconInputStream != null) {
+                Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+                dialogStage.getIcons().add(new Image(iconInputStream));
+            }
+        } catch (Exception e) {
+            // Icon laden fehlgeschlagen, ignorieren
+        }
+        
+        Optional<GameSave> result = dialog.showAndWait();
+        result.ifPresent(selectedSave -> {
+            boolean erfolg = controller.ladeSpiel(selectedSave.getSaveId());
+            if (erfolg) {
+                // Message-History löschen und neu aufbauen
+                messageHistory.clear();
+                debugInfoMap.clear();
+                nachrichtenContainer.getChildren().clear();
+                
+                addWelcomeMessage();
+                addSystemMessage("📂 Spielstand geladen: " + selectedSave.getSaveName());
+                
+                // GUI aktualisieren
+                aktualisiereAnzeige();
+            } else {
+                zeigeFehlermeldung("❌ Fehler beim Laden des Spielstands");
+            }
+        });
     }
 } 

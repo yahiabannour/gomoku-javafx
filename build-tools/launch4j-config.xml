@@ -43,7 +43,6 @@
   
   <messages>
     <startupErr>Fehler beim Starten von Gomoku. Bitte stellen Sie sicher, dass Java 17 oder höher installiert ist.</startupErr>
-    <bundledJreErr>Fehler bei der Java-Runtime-Umgebung.</bundledJreErr>
     <jreVersionErr>Java 17 oder höher ist erforderlich.</jreVersionErr>
     <launcherErr>Fehler beim Starten der Anwendung.</launcherErr>
   </messages>

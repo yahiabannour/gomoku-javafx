@@ -59,7 +59,17 @@ public class GomokuApplication extends Application {
      * Zeigt den Welcome-Screen für die Spielkonfiguration
      */
     private void zeigeWelcomeScreen() {
-        WelcomeView welcomeView = new WelcomeView(primaryStage, this::starteSpielMitKonfiguration);
+        WelcomeView welcomeView = new WelcomeView(primaryStage, new WelcomeView.WelcomeCallback() {
+            @Override
+            public void onGameStart(SpielKonfiguration konfiguration) {
+                starteSpielMitKonfiguration(konfiguration);
+            }
+            
+            @Override
+            public void onGameLoad() {
+                ladeGespeichertesSpiel();
+            }
+        });
         welcomeView.zeigen();
     }
     
@@ -84,6 +94,42 @@ public class GomokuApplication extends Application {
             
         } catch (Exception e) {
             System.err.println("Fehler beim Starten des Spiels: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Lädt ein gespeichertes Spiel
+     */
+    private void ladeGespeichertesSpiel() {
+        try {
+            // Standard-Konfiguration für GUI-Modus erstellen
+            SpielKonfiguration config = new SpielKonfiguration();
+            config.setGuiModus(true);
+            
+            // Controller erstellen
+            SpielController controller = new SpielController(config);
+            
+            // GUI-View erstellen und Primary Stage setzen
+            if (controller.getView() instanceof de.hsh.oil.gomoku.view.GuiView) {
+                de.hsh.oil.gomoku.view.GuiView guiView = (de.hsh.oil.gomoku.view.GuiView) controller.getView();
+                guiView.setPrimaryStage(primaryStage);
+            }
+            
+            // Spiel starten (GUI wird initialisiert)
+            controller.starteSpiel();
+            
+            // Lade-Dialog über die GUI anzeigen
+            javafx.application.Platform.runLater(() -> {
+                if (controller.getView() instanceof de.hsh.oil.gomoku.view.GuiView) {
+                    de.hsh.oil.gomoku.view.GuiView guiView = (de.hsh.oil.gomoku.view.GuiView) controller.getView();
+                    // Lade-Dialog direkt aufrufen
+                    guiView.zeigeLadenDialog();
+                }
+            });
+            
+        } catch (Exception e) {
+            System.err.println("Fehler beim Laden des Spiels: " + e.getMessage());
             e.printStackTrace();
         }
     }

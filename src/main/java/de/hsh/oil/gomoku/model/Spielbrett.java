@@ -286,13 +286,35 @@ public class Spielbrett {
     
     public char getFeld(int x, int y) {
         if (x < 0 || x >= groesse || y < 0 || y >= groesse) {
-            return ' '; // Ungültige Koordinaten
+            return LEER;
         }
         return brett[y][x];
     }
     
+    /**
+     * Setzt ein Feld direkt (für Laden von Spielständen)
+     * 
+     * @param x X-Koordinate
+     * @param y Y-Koordinate
+     * @param symbol Das zu setzende Symbol
+     */
+    public void setFeld(int x, int y, char symbol) {
+        if (x >= 0 && x < groesse && y >= 0 && y < groesse) {
+            brett[y][x] = symbol;
+        }
+    }
+    
     public List<Zug> getZugVerlauf() {
         return new ArrayList<>(zugVerlauf);
+    }
+    
+    /**
+     * Gibt die Zug-Historie zurück (für XML-Serialisierung)
+     * 
+     * @return Die Liste der Züge
+     */
+    public List<Zug> getZugHistorie() {
+        return zugVerlauf;
     }
     
     public Spieler getGewinner() {

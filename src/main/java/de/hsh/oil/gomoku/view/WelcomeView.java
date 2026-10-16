@@ -40,6 +40,7 @@ public class WelcomeView {
     private CheckBox debugCheckBox;
     private CheckBox debugDateiCheckBox;
     private Button startButton;
+    private Button loadButton;
     private Label strategieLabel1;
     private Label strategieLabel2;
     
@@ -55,10 +56,11 @@ public class WelcomeView {
     private Label strategieInfoLabel;
     
     /**
-     * Callback-Interface für Spielstart
+     * Callback-Interface für Spielstart und Laden
      */
     public interface WelcomeCallback {
         void onGameStart(SpielKonfiguration konfiguration);
+        void onGameLoad();
     }
     
     /**
@@ -118,10 +120,14 @@ public class WelcomeView {
         
         inhaltsContainer.getChildren().addAll(linkeSpalte, mittlereSpalte, rechteSpalte);
         
+        // Button-Container
+        HBox buttonContainer = new HBox(20);
+        buttonContainer.setAlignment(Pos.CENTER);
+        
         // Start-Button
-        startButton = new Button(FontAwesome.iconText(FontAwesome.ROCKET, "SPIEL STARTEN"));
-        startButton.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        startButton.setPrefSize(300, 60);
+        startButton = new Button(FontAwesome.iconText(FontAwesome.ROCKET, "NEUES SPIEL"));
+        startButton.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        startButton.setPrefSize(280, 60);
         startButton.setStyle(
             "-fx-background-color: linear-gradient(to bottom, #5E81AC, #4C6C92);" +
             "-fx-text-fill: white;" +
@@ -152,6 +158,42 @@ public class WelcomeView {
         
         startButton.setOnAction(e -> starteSpiel());
         
+        // Load-Button
+        loadButton = new Button(FontAwesome.iconText(FontAwesome.FOLDER_OPEN, "SPIEL LADEN"));
+        loadButton.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        loadButton.setPrefSize(280, 60);
+        loadButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #A3BE8C, #8FA67A);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 30;" +
+            "-fx-border-radius: 30;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);"
+        );
+        
+        loadButton.setOnMouseEntered(e -> loadButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #B5D196, #A1C086);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 30;" +
+            "-fx-border-radius: 30;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0, 0, 7);" +
+            "-fx-scale-x: 1.05;" +
+            "-fx-scale-y: 1.05;"
+        ));
+        
+        loadButton.setOnMouseExited(e -> loadButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #A3BE8C, #8FA67A);" +
+            "-fx-text-fill: white;" +
+            "-fx-background-radius: 30;" +
+            "-fx-border-radius: 30;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);" +
+            "-fx-scale-x: 1.0;" +
+            "-fx-scale-y: 1.0;"
+        ));
+        
+        loadButton.setOnAction(e -> ladeSpiel());
+        
+        buttonContainer.getChildren().addAll(startButton, loadButton);
+        
         // Footer
         Label footerLabel = new Label("OIL SS2025 • Hochschule Hannover • Version 1.0");
         footerLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
@@ -162,7 +204,7 @@ public class WelcomeView {
             new Region(), // Spacer
             inhaltsContainer,
             new Region(), // Spacer
-            startButton,
+            buttonContainer,
             new Region(), // Spacer
             footerLabel
         );
@@ -176,7 +218,9 @@ public class WelcomeView {
         Scene scene = new Scene(hauptLayout, 1200, 900);
         stage.setTitle("Gomoku - Willkommen");
         stage.setScene(scene);
-        stage.setResizable(false);
+        stage.setMinWidth(900);
+        stage.setMinHeight(700);
+        stage.setResizable(true);
         stage.centerOnScreen();
         
         // Icon aus Resources laden
@@ -699,6 +743,15 @@ public class WelcomeView {
         
         if (callback != null) {
             callback.onGameStart(konfiguration);
+        }
+    }
+    
+    /**
+     * Lädt ein gespeichertes Spiel
+     */
+    private void ladeSpiel() {
+        if (callback != null) {
+            callback.onGameLoad();
         }
     }
     

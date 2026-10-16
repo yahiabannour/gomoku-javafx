@@ -30,6 +30,7 @@ public class FontAwesome {
     public static final String TIMES = "❌";             // Close
     public static final String ROCKET = "🚀";            // Rocket
     public static final String FOLDER = "📁";            // Folder
+    public static final String FOLDER_OPEN = "📂";       // Open Folder
     public static final String FILE_TEXT = "📄";         // File
     public static final String CHART_BAR = "📊";         // Chart
     public static final String EYE = "👁️";               // Eye

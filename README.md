@@ -1,177 +1,75 @@
-# Gomoku Brettspiel - OIL SS2025
+# Gomoku – JavaFX board game with Minimax AI
 
-Ein strategisches Gomoku-Brettspiel implementiert in Java mit JavaFX, entwickelt als Abschlussaufgabe für die Lehrveranstaltung "Objektorientierte Implementierungssprache (OIL)" SS2025.
+A complete implementation of the board game **Gomoku** (five in a row on a 15×15 board) in Java 17 and JavaFX,
+playable in a graphical interface or on the console, against a friend or against one of three computer opponents.
 
-## Über das Spiel
+Built as the final project for the course *Objektorientierte Implementierungssprache (OIL)* at
+Hochschule Hannover, summer semester 2025.
 
-Gomoku ist ein strategisches Brettspiel für zwei Spieler auf einem 15x15 Gitter. Das Ziel ist es, fünf eigene Steine in einer Reihe zu platzieren – horizontal, vertikal oder diagonal.
+<!-- Add a screenshot here: docs/screenshot.png -->
 
 ## Features
 
-### Kernfunktionalitäten (Pflicht)
-- ✅ **Spielmodi**: Player vs Player (PP), Player vs Computer (PC), Computer vs Computer (CC)
-- ✅ **KI-Strategien**: 
-  - S1: Zufällige Züge (eingeschränkt)
-  - S2: Einfache Logik (Blocken)
-  - S3: Minimax-Algorithmus
-- ✅ **Parameterverarbeitung**: Reguläre Ausdrücke mit Logikvalidierung
-- ✅ **Debug-Modi**: Konsole (D) und Datei (DF) Ausgabe
-- ✅ **GUI**: JavaFX-basierte Benutzeroberfläche
-- ✅ **Konsole**: Interaktive Kommandozeilen-Bedienung
+- **Three game modes**: Player vs Player, Player vs Computer, Computer vs Computer
+- **Three AI strategies**, selectable per player:
+  - **S1** – random moves, limited to the area around existing stones
+  - **S2** – rule-based: completes its own lines and blocks the opponent's threats
+  - **S3** – **Minimax with alpha-beta pruning** (search depth 4) and a heuristic board evaluation
+- **JavaFX GUI** with a welcome screen, game settings and save/load dialogs
+- **Console mode** for playing entirely in the terminal
+- **Save and load games as XML** (JAXB), including the move history and win/draw statistics
+- **Command-line parameters** validated with regular expressions, in any order
+- **Debug output** to the console (`D`) or to a log file (`DF`)
+- Windows `.exe` build via Launch4j
 
-### Zusatzfunktionalitäten
-- ✅ **Design Patterns**: MVC-Architektur + Strategy Pattern
-- ✅ **XML-Support**: Speichern und Laden von Spielständen
-- ✅ **Alpha-Beta-Pruning**: Optimierter Minimax-Algorithmus
-- ✅ **Statistiken**: Spielerstatistiken und Gewinnraten
-- ✅ **Animationen**: GUI-Animationen für Züge und Siege
+## Architecture
 
-## Architektur
-
-Das Projekt folgt dem **Model-View-Controller (MVC)** Pattern kombiniert mit dem **Strategy Design Pattern** für KI-Strategien:
+The project follows **Model-View-Controller**, with the **Strategy pattern** for the AI opponents and a
+**Factory** that creates a strategy from its parameter (`S1`–`S3`).
 
 ```
 de.hsh.oil.gomoku/
-├── Main.java                 # Einstiegspunkt mit Parameterverarbeitung
-├── model/                    # Model-Schicht
-│   ├── SpielKonfiguration.java
-│   ├── SpielModus.java
-│   ├── DebugModus.java
-│   ├── KiStrategie.java
-│   ├── Spieler.java
-│   ├── Zug.java
-│   └── Spielbrett.java
-├── controller/               # Controller-Schicht
-│   └── SpielController.java
-├── view/                     # View-Schicht
-│   ├── KonsoleView.java
-│   └── GuiView.java
-├── strategy/                 # Strategy Pattern für KI
-│   ├── ZugStrategie.java
-│   ├── ZufallsStrategie.java
-│   ├── EinfacheLogikStrategie.java
-│   └── MinimaxStrategie.java
-└── util/                     # Utility-Klassen
-    ├── ParameterValidator.java
-    ├── XmlManager.java
-    └── DebugLogger.java
+├── Main.java, GomokuApplication.java   Entry points, parameter handling
+├── model/        Board, players, moves, configuration, save games, statistics
+├── controller/   SpielController – game flow, turn order, win detection
+├── view/         GuiView, WelcomeView (JavaFX), KonsoleView (terminal)
+├── strategy/     ZugStrategie interface + Random, Rule-based and Minimax strategies
+└── util/         ParameterValidator (regex), StrategieFactory, XmlSaveManager, DebugLogger
 ```
 
-## Verwendung
+Because the views only talk to the controller, the same game logic drives both the GUI and the console.
 
-### Kommandozeile
+## Getting started
+
+Requirements: **Java 17+**. Maven does not need to be installed; the Maven wrapper downloads it.
+JavaFX is pulled in as a Maven dependency.
 
 ```bash
-# GUI-Modus (ohne Parameter)
-java -jar gomoku.jar
-
-# Spieler vs Computer mit Minimax-Strategie und Debug
-java -jar gomoku.jar PC S3 D
-
-# Computer vs Computer mit verschiedenen Strategien
-java -jar gomoku.jar CC S1 S3 DF
-
-# Spieler vs Spieler
-java -jar gomoku.jar PP
+./mvnw package                     # Windows: mvnw.cmd package
+java -jar target/gomoku-1.0.0-executable.jar
 ```
 
-### Parameter
+### Command-line parameters
 
-| Parameter | Beschreibung |
-|-----------|-------------|
-| **PP** | Player vs Player (Spieler gegen Spieler) |
-| **PC** | Player vs Computer (Spieler gegen Computer) |
-| **CC** | Computer vs Computer |
-| **D** | Debug-Ausgabe auf der Konsole |
-| **DF** | Debug-Ausgabe in ASCII-Datei |
-| **S1** | Zufällige Züge (eingeschränkt) |
-| **S2** | Einfache Logik (Blocken) |
-| **S3** | Minimax-Algorithmus |
+Without parameters the game opens the welcome screen. Parameters can be combined in any order:
 
-### Beispiele
+| Parameter | Meaning |
+|-----------|---------|
+| `PP` / `PC` / `CC` | Player vs Player / Player vs Computer / Computer vs Computer |
+| `S1` / `S2` / `S3` | AI strategy: random / rule-based / Minimax |
+| `D` / `DF` | Debug output to the console / to a file |
+| `Go` | Start the given configuration in the GUI instead of the console |
 
 ```bash
-# Verschiedene Kombinationen (Reihenfolge beliebig)
-java -jar gomoku.jar PC D S3
-java -jar gomoku.jar S2 PC DF
-java -jar gomoku.jar CC S1 S3 D
+java -jar target/gomoku-1.0.0-executable.jar PC S3 D        # console, against Minimax, with debug output
+java -jar target/gomoku-1.0.0-executable.jar Go CC S1 S3    # GUI, random AI vs Minimax
 ```
 
-## Kompilierung und Ausführung
+### Windows executable
 
-### Voraussetzungen
-- Java 17 oder höher
-- Maven 3.6 oder höher
-- JavaFX 20.0.1 (wird automatisch über Maven geladen)
+`build-exe.bat` builds the jar and wraps it into `releases/Gomoku-1.0.0.exe` with Launch4j.
+See [BUILD-README.md](BUILD-README.md) for details.
 
-### Kompilierung
-```bash
-mvn clean compile # mvn compile
-mvn package # mvn compile jar:jar assembly:single
-```
+## Tech stack
 
-### Ausführung
-```bash
-java --add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED -jar target/gomoku-1.0.0.jar
-
-# Mit Maven
-mvn javafx:run
-
-# Als JAR (nach mvn package)
-java -jar target/gomoku-1.0.0.jar [PARAMETER]
-```
-
-### Tests
-```bash
-mvn test
-```
-
-## Design Patterns
-
-### Model-View-Controller (MVC)
-- **Model**: Spiellogik, Datenstrukturen (SpielKonfiguration, Spielbrett, Spieler)
-- **View**: Benutzeroberflächen (KonsoleView, GuiView)
-- **Controller**: Spielsteuerung und Koordination (SpielController)
-
-### Strategy Pattern
-- **Interface**: `ZugStrategie`
-- **Implementierungen**: 
-  - `ZufallsStrategie` (S1)
-  - `EinfacheLogikStrategie` (S2)
-  - `MinimaxStrategie` (S3 mit Alpha-Beta-Pruning)
-
-## Technische Details
-
-### Parametervalidierung
-- Reguläre Ausdrücke für syntaktische Korrektheit
-- Logikprüfung für sinnvolle Parameterkombinationen
-- Beliebige Parameterreihenfolge unterstützt
-
-### KI-Strategien
-1. **S1 - Zufallsstrategie**: Beschränkte zufällige Züge in der Nähe bestehender Steine
-2. **S2 - Einfache Logik**: Blockt Gegnerzüge und sucht eigene Gewinnmöglichkeiten
-3. **S3 - Minimax**: Rekursiver Algorithmus mit Alpha-Beta-Pruning
-
-### Debug-Modi
-- **Konsole (D)**: Echtzeitausgabe aller Züge
-- **Datei (DF)**: Persistente Protokollierung in ASCII-Format
-
-### XML-Speicherung
-```xml
-<spiel>
-  <modus>PC</modus>
-  <strategie>S3</strategie>
-  <brett groesse="15">...</brett>
-  <zuege>...</zuege>
-  <gewinner>P1</gewinner>
-</spiel>
-```
-
-## Autoren
-
-- OIL SS2025 - Hochschule Hannover    
-- Entwickelt für die Abschlussaufgabe "Objektorientierte Implementierungssprache"
-
-## Lizenz
-
-Dieses Projekt wurde für Bildungszwecke entwickelt. 
+Java 17 · JavaFX 20 · Maven · JAXB (XML) · Launch4j

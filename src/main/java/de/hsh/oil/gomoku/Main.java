@@ -3,6 +3,7 @@ package de.hsh.oil.gomoku;
 import javafx.application.Application;
 import de.hsh.oil.gomoku.controller.SpielController;
 import de.hsh.oil.gomoku.util.ParameterValidator;
+import de.hsh.oil.gomoku.util.XmlSaveManager;
 import de.hsh.oil.gomoku.model.SpielKonfiguration;
 
 /**
@@ -36,6 +37,18 @@ public class Main {
             System.out.println("  Version: " + VERSION);
             System.out.println("  OIL SS2025 - Hochschule Hannover");
             System.out.println("=".repeat(50));
+            
+            // XML-Datenbank initialisieren (nur wenn verfügbar)
+            try {
+                XmlSaveManager saveManager = new XmlSaveManager();
+                if (saveManager.isDatabaseReady()) {
+                    System.out.println("✅ XML-Datenbank erfolgreich initialisiert");
+                } else {
+                    System.out.println("⚠️ XML-Datenbank-Initialisierung fehlgeschlagen");
+                }
+            } catch (Exception e) {
+                System.out.println("⚠️ XML-Funktionen nicht verfügbar (JAXB fehlt): " + e.getMessage());
+            }
             
             // Parameter validieren und Konfiguration erstellen
             SpielKonfiguration konfiguration;
