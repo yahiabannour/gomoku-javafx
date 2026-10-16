@@ -3,7 +3,7 @@
 # 🎮 Gomoku – Five in a Row (JavaFX) ⚫⚪
 
 ![Java](https://img.shields.io/badge/java-17-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
-![JavaFX](https://img.shields.io/badge/javafx-20-%23007396.svg?style=for-the-badge&logo=java&logoColor=white)
+![JavaFX](https://img.shields.io/badge/javafx-20-%23007396.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Maven](https://img.shields.io/badge/maven-%23C71A36.svg?style=for-the-badge&logo=apachemaven&logoColor=white)
 
 A complete implementation of the board game **Gomoku** (five in a row on a 15×15 board) in Java 17 and JavaFX –
